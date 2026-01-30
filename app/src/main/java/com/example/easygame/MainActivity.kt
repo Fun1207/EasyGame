@@ -24,7 +24,9 @@ class MainActivity : ComponentActivity(), AndroidScopeComponent {
 
         enableEdgeToEdge()
         setContent {
-            val navigator: Navigator = get()
+            val navigator: Navigator = get<Navigator>().apply {
+                setOnQuitApplication { finishAndRemoveTask() }
+            }
 
             NavDisplay(
                 backStack = navigator.backStack,

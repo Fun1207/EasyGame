@@ -11,5 +11,8 @@ sealed interface Screen {
     data object GameDetail : Screen
 
     @Serializable
+    data object HighScore : Screen
+
+    @Serializable
     data object Settings : Screen
 }
