@@ -89,7 +89,7 @@ private fun GameView(viewModel: GameDetailViewModel) {
             val objectSize = size.width * 0.1f
             viewModel.hitBoxSize = objectSize / size.width
             withTransform({
-                translate(viewModel.arrowX * size.width - objectSize / 2, size.height)
+                translate(viewModel.basketX * size.width - objectSize / 2, size.height)
             }) {
                 with(arrowVectorPainter) {
                     draw(Size(objectSize, objectSize))

@@ -15,7 +15,7 @@ import kotlin.random.Random
 
 class GameDetailViewModel(val gameSensorManager: GameSensorManager) : ViewModel() {
 
-    var arrowX by mutableFloatStateOf(0.5f)
+    var basketX by mutableFloatStateOf(0.5f)
         private set
     var appleList by mutableStateOf(listOf<Apple>())
         private set
@@ -23,23 +23,15 @@ class GameDetailViewModel(val gameSensorManager: GameSensorManager) : ViewModel(
         private set
     var isGamePaused by mutableStateOf(false)
         private set
-    var isGameOver: Boolean = false
+    var isGameOver by mutableStateOf(false)
         private set
     var hitBoxSize by mutableFloatStateOf(0f)
+    private var speedLevel by mutableFloatStateOf(1f)
 
     init {
-        gameSensorManager.startListening()
-        viewModelScope.launch {
-            gameSensorManager.tiltData.collect { coordinate ->
-                arrowX = (arrowX - coordinate * 0.005f).coerceIn(0f, 1f)
-            }
-        }
-        viewModelScope.launch {
-            while (!isGameOver) {
-                if (!isGamePaused) updateGameLogic()
-                delay(16)
-            }
-        }
+        moveBasket()
+        moveAppleAndCalculateScore()
+        generateApples()
     }
 
     override fun onCleared() {
@@ -48,21 +40,44 @@ class GameDetailViewModel(val gameSensorManager: GameSensorManager) : ViewModel(
         super.onCleared()
     }
 
-    private fun updateGameLogic() {
-        val currentApples = appleList.map { it.copy(y = it.y + 0.008f) }
-        appleList = currentApples.filter { apple ->
-            if (apple.y < 1f - hitBoxSize * 0.9f) {
-                return@filter true
+    private fun moveBasket() {
+        gameSensorManager.startListening()
+        viewModelScope.launch {
+            gameSensorManager.tiltData.collect { coordinate ->
+                basketX = (basketX - coordinate * 0.005f).coerceIn(0f, 1f)
             }
-            if (apple.x >= arrowX - hitBoxSize && apple.x <= arrowX + hitBoxSize) {
-                score += 1
-                return@filter false
-            }
-            apple.y < 1.1f
         }
-        if (appleList.size < 5 && Random.nextInt(100) < 4) {
-            val newApple = Apple(x = Random.nextFloat(), y = -0.1f)
-            appleList = appleList + newApple
+    }
+
+    private fun generateApples() = viewModelScope.launch {
+        while (!isGameOver) {
+            if (!isGamePaused && appleList.size < APPLES_MAX_SIZE) {
+                val newApple = Apple(x = Random.nextFloat(), y = -0.1f)
+                appleList = appleList + newApple
+                delay(Random.nextLong(50, 800))
+            } else delay(FPS_FRAME_RATE_DELAY)
+        }
+    }
+
+    private fun moveAppleAndCalculateScore() = viewModelScope.launch {
+        while (!isGameOver) {
+            if (!isGamePaused) {
+                val currentApples = appleList.map { apple ->
+                    apple.copy(y = apple.y + speedLevel * APPLE_SPEED)
+                }
+                appleList = currentApples.filter { apple ->
+                    if (apple.y < 1f - hitBoxSize * 0.9f) {
+                        return@filter true
+                    }
+                    if (apple.x >= basketX - hitBoxSize && apple.x <= basketX + hitBoxSize && apple.y < 1f) {
+                        score += 1
+                        if (score.mod(10) == 0 && speedLevel < SPEED_LEVEL_MAX) speedLevel += 0.5f
+                        return@filter false
+                    }
+                    apple.y < 1.1f
+                }
+            }
+            delay(FPS_FRAME_RATE_DELAY)
         }
     }
 
@@ -70,5 +85,12 @@ class GameDetailViewModel(val gameSensorManager: GameSensorManager) : ViewModel(
         isGamePaused = isPause
         if (isPause) gameSensorManager.stopListening()
         else gameSensorManager.startListening()
+    }
+
+    private companion object {
+        const val FPS_FRAME_RATE_DELAY: Long = 1000 / 60
+        const val APPLE_SPEED: Float = 0.0025f
+        const val SPEED_LEVEL_MAX: Float = 5f
+        const val APPLES_MAX_SIZE: Int = 10
     }
 }
