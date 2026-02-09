@@ -15,7 +15,8 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.wrapContentSize
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
@@ -24,6 +25,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.drawscope.withTransform
 import androidx.compose.ui.graphics.graphicsLayer
@@ -33,30 +35,64 @@ import androidx.compose.ui.platform.LocalWindowInfo
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.res.vectorResource
-import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.example.easygame.R
 import com.example.easygame.data.model.GameObjectType
 import com.example.easygame.ui.theme.BackgroundColor
-import org.koin.compose.viewmodel.koinViewModel
+import com.example.easygame.ui.theme.WhiteColor
 
-@Preview
 @Composable
-fun GameDetailScreen(
-    viewModel: GameDetailViewModel = koinViewModel(),
-    onBack: () -> Unit = {}
-) {
-    HandleLifecycle(viewModel)
+fun GameDetailScreen(viewModel: GameDetailViewModel, onBack: () -> Unit) {
+    BackPressHandler(viewModel, onBack)
+    FocusHandler(viewModel)
     GameView(viewModel)
     TopBar(viewModel)
     PausedGameView(viewModel, onBack)
+    GameOverView(viewModel, onBack)
+}
+
+@Composable
+fun GameOverView(viewModel: GameDetailViewModel, onBack: () -> Unit) {
+    if (!viewModel.isGameOver) return
+    Box(
+        Modifier
+            .fillMaxSize()
+            .background(BackgroundColor)
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(24.dp)
+                .align(Alignment.Center)
+                .clip(RoundedCornerShape(16.dp))
+                .background(WhiteColor)
+                .padding(16.dp),
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            Text(
+                text = stringResource(R.string.game_over),
+                modifier = Modifier.padding(vertical = 8.dp),
+                style = MaterialTheme.typography.titleLarge
+            )
+            Text(
+                text = stringResource(R.string.game_over_result, viewModel.score, viewModel.score),
+                modifier = Modifier.padding(bottom = 8.dp),
+                style = MaterialTheme.typography.bodyLarge,
+                textAlign = TextAlign.Center
+            )
+            TextButton(onClick = onBack) {
+                Text(
+                    text = stringResource(R.string.back_to_menu),
+                    style = MaterialTheme.typography.labelLarge
+                )
+            }
+        }
+    }
 }
 
 @Composable
 private fun PausedGameView(viewModel: GameDetailViewModel, onBack: () -> Unit = {}) {
-    BackHandler(enabled = true) {
-        viewModel.togglePauseGame(!viewModel.isGamePaused)
-    }
     if (!viewModel.isGamePaused) return
     Box(
         Modifier
@@ -65,18 +101,37 @@ private fun PausedGameView(viewModel: GameDetailViewModel, onBack: () -> Unit = 
     ) {
         Column(
             modifier = Modifier
-                .wrapContentSize()
-                .padding(48.dp)
-                .align(Alignment.Center),
+                .fillMaxWidth()
+                .padding(24.dp)
+                .align(Alignment.Center)
+                .clip(RoundedCornerShape(16.dp))
+                .background(WhiteColor)
+                .padding(16.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            Text(stringResource(R.string.are_you_sure, viewModel.score))
+            Text(
+                modifier = Modifier.padding(vertical = 8.dp),
+                text = stringResource(R.string.game_paused),
+                style = MaterialTheme.typography.titleLarge
+            )
+            Text(
+                text = stringResource(R.string.are_you_sure, viewModel.score),
+                modifier = Modifier.padding(bottom = 8.dp),
+                style = MaterialTheme.typography.bodyLarge,
+                textAlign = TextAlign.Center
+            )
             Row {
                 TextButton(onClick = onBack) {
-                    Text(stringResource(R.string.end_this_round))
+                    Text(
+                        text = stringResource(R.string.end_this_round),
+                        style = MaterialTheme.typography.labelLarge
+                    )
                 }
                 TextButton(onClick = { viewModel.togglePauseGame(false) }) {
-                    Text(stringResource(R.string.back_to_game))
+                    Text(
+                        text = stringResource(R.string.back_to_game),
+                        style = MaterialTheme.typography.labelLarge
+                    )
                 }
             }
         }
@@ -113,8 +168,8 @@ private fun GameView(viewModel: GameDetailViewModel) {
             viewModel.appleList.forEach { apple ->
                 withTransform({
                     translate(
-                        apple.x * size.width - objectSize / 2,
-                        apple.y * size.height + objectSize
+                        left = apple.x * size.width - objectSize / 2,
+                        top = apple.y * size.height + objectSize
                     )
                 }) {
                     with(
@@ -132,7 +187,7 @@ private fun GameView(viewModel: GameDetailViewModel) {
 @Composable
 private fun TopBar(viewModel: GameDetailViewModel) {
     Column(
-        Modifier.fillMaxWidth(),
+        modifier = Modifier.fillMaxWidth(),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         Row(
@@ -179,12 +234,23 @@ private fun HeartImageView(isHeartBroken: Boolean, modifier: Modifier = Modifier
 )
 
 @Composable
-fun HandleLifecycle(viewModel: GameDetailViewModel) {
+private fun FocusHandler(viewModel: GameDetailViewModel) {
     val isWindowFocused = LocalWindowInfo.current.isWindowFocused
     LaunchedEffect(isWindowFocused) {
         if (viewModel.isGameOver) return@LaunchedEffect
         if (viewModel.isGamePaused) return@LaunchedEffect
         if (isWindowFocused) return@LaunchedEffect
         viewModel.togglePauseGame(true)
+    }
+}
+
+@Composable
+private fun BackPressHandler(viewModel: GameDetailViewModel, onBack: () -> Unit) {
+    BackHandler(enabled = true) {
+        if (viewModel.isGameOver) {
+            onBack()
+            return@BackHandler
+        }
+        viewModel.togglePauseGame(!viewModel.isGamePaused)
     }
 }

@@ -6,6 +6,10 @@
     <string name="settings">Settings</string>
     <string name="quit_game">Quit Game</string>
     <string name="back_to_game">Back to game</string>
+    <string name="game_paused">Game Paused</string>
     <string name="end_this_round">End this round</string>
     <string name="are_you_sure">Do you want to end this round with %1$d points?</string>
+    <string name="game_over">Game Over</string>
+    <string name="game_over_result">You scored %1$d points and earned %2$d coin!</string>
+    <string name="back_to_menu">Back to menu</string>
 </resources>
