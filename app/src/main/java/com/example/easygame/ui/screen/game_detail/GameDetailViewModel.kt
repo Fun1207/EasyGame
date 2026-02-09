@@ -7,7 +7,8 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.easygame.data.model.Apple
+import com.example.easygame.data.model.GameObject
+import com.example.easygame.data.model.GameObjectType
 import com.example.easygame.data.repository.GameSensorManager
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -17,9 +18,12 @@ class GameDetailViewModel(val gameSensorManager: GameSensorManager) : ViewModel(
 
     var basketX by mutableFloatStateOf(0.5f)
         private set
-    var appleList by mutableStateOf(listOf<Apple>())
+    var appleList by mutableStateOf(listOf<GameObject>())
         private set
+
     var score by mutableIntStateOf(0)
+        private set
+    var heart by mutableIntStateOf(MAX_HEART_VALUE)
         private set
     var isGamePaused by mutableStateOf(false)
         private set
@@ -31,7 +35,7 @@ class GameDetailViewModel(val gameSensorManager: GameSensorManager) : ViewModel(
     init {
         moveBasket()
         moveAppleAndCalculateScore()
-        generateApples()
+        generateGameObject()
     }
 
     override fun onCleared() {
@@ -49,10 +53,15 @@ class GameDetailViewModel(val gameSensorManager: GameSensorManager) : ViewModel(
         }
     }
 
-    private fun generateApples() = viewModelScope.launch {
+    private fun generateGameObject() = viewModelScope.launch {
         while (!isGameOver) {
             if (!isGamePaused && appleList.size < APPLES_MAX_SIZE) {
-                val newApple = Apple(x = Random.nextFloat(), y = -0.1f)
+                val isBomb = Random.nextInt(0, 100) < BOMB_SPAWN_RATE
+                val newApple = GameObject(
+                    x = Random.nextFloat(),
+                    y = -0.1f,
+                    gameObjectType = if (isBomb) GameObjectType.BOMB else GameObjectType.APPLE
+                )
                 appleList = appleList + newApple
                 delay(Random.nextLong(50, 800))
             } else delay(FPS_FRAME_RATE_DELAY)
@@ -70,6 +79,10 @@ class GameDetailViewModel(val gameSensorManager: GameSensorManager) : ViewModel(
                         return@filter true
                     }
                     if (apple.x >= basketX - hitBoxSize && apple.x <= basketX + hitBoxSize && apple.y < 1f) {
+                        if (apple.gameObjectType == GameObjectType.BOMB) {
+                            decreaseHeart()
+                            return@filter false
+                        }
                         score += 1
                         if (score.mod(10) == 0 && speedLevel < SPEED_LEVEL_MAX) speedLevel += 0.5f
                         return@filter false
@@ -81,16 +94,25 @@ class GameDetailViewModel(val gameSensorManager: GameSensorManager) : ViewModel(
         }
     }
 
+    private fun decreaseHeart() {
+        heart -= 1
+        if (heart > 0) return
+        isGameOver = true
+        gameSensorManager.stopListening()
+    }
+
     fun togglePauseGame(isPause: Boolean) {
         isGamePaused = isPause
         if (isPause) gameSensorManager.stopListening()
         else gameSensorManager.startListening()
     }
 
-    private companion object {
-        const val FPS_FRAME_RATE_DELAY: Long = 1000 / 60
-        const val APPLE_SPEED: Float = 0.0025f
-        const val SPEED_LEVEL_MAX: Float = 5f
-        const val APPLES_MAX_SIZE: Int = 10
+    companion object {
+        private const val FPS_FRAME_RATE_DELAY: Long = 1000 / 60
+        private const val APPLE_SPEED: Float = 0.0025f
+        private const val SPEED_LEVEL_MAX: Float = 5f
+        private const val APPLES_MAX_SIZE: Int = 10
+        private const val BOMB_SPAWN_RATE: Int = 13
+        const val MAX_HEART_VALUE: Int = 3
     }
 }
