@@ -10,10 +10,13 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -50,9 +53,10 @@ fun GameDetailScreen(viewModel: GameDetailViewModel, onBack: () -> Unit) {
     )
     FocusHandler(viewModel.isGameOver, viewModel.isGamePaused, viewModel::togglePauseGame)
     GameView(viewModel.basketX, viewModel.gameObjectList, viewModel::measureHitBoxSize)
-    TopBar(viewModel.heart, viewModel.score)
+    TopBar(viewModel.heart, viewModel.score, viewModel.coin)
     ShowGameDialogs(
         viewModel.score,
+        viewModel.coin,
         viewModel.isGameOver,
         viewModel.isGamePaused,
         onBack,
@@ -63,6 +67,7 @@ fun GameDetailScreen(viewModel: GameDetailViewModel, onBack: () -> Unit) {
 @Composable
 fun ShowGameDialogs(
     score: Int,
+    coin: Int,
     isGameOver: Boolean,
     isGamePaused: Boolean,
     onBack: () -> Unit,
@@ -70,7 +75,7 @@ fun ShowGameDialogs(
 ) {
     if (isGameOver) GameDialog(
         title = stringResource(R.string.game_over),
-        content = stringResource(R.string.game_over_result, score, score),
+        content = stringResource(R.string.game_over_result, score, score + coin),
         confirm = stringResource(R.string.back_to_menu),
         onConfirm = onBack
     )
@@ -96,6 +101,8 @@ private fun GameView(
         rememberVectorPainter(ImageVector.vectorResource(R.drawable.icon_apple))
     val bombVectorPainter =
         rememberVectorPainter(ImageVector.vectorResource(R.drawable.icon_bomb))
+    val coinVectorPainter =
+        rememberVectorPainter(ImageVector.vectorResource(R.drawable.icon_coin))
     var objectSize by remember { mutableFloatStateOf(0f) }
     Box(
         modifier = Modifier
@@ -126,8 +133,11 @@ private fun GameView(
                     )
                 }) {
                     with(
-                        if (apple.gameObjectType == GameObjectType.BOMB) bombVectorPainter
-                        else appleVectorPainter
+                        when (apple.gameObjectType) {
+                            GameObjectType.APPLE -> appleVectorPainter
+                            GameObjectType.BOMB -> bombVectorPainter
+                            GameObjectType.COIN -> coinVectorPainter
+                        }
                     ) {
                         draw(Size(objectSize, objectSize))
                     }
@@ -138,39 +148,48 @@ private fun GameView(
 }
 
 @Composable
-private fun TopBar(heart: Int, score: Int) = Column(
-    modifier = Modifier.fillMaxWidth(),
-    horizontalAlignment = Alignment.CenterHorizontally
-) {
-    Row(
-        modifier = Modifier.padding(16.dp),
-        horizontalArrangement = Arrangement.spacedBy(16.dp, Alignment.End),
-    ) {
-        repeat(GameDetailViewModel.MAX_HEART_VALUE) { count ->
-            val isHeartBroken = count >= heart
-            val explosionScale by animateFloatAsState(
-                targetValue = if (isHeartBroken) 3f else 1f,
-                animationSpec = tween(durationMillis = 500, easing = FastOutSlowInEasing)
+private fun TopBar(heart: Int, score: Int, coin: Int) =
+    Box(Modifier.padding(16.dp), contentAlignment = Alignment.CenterEnd) {
+        Row {
+            Image(
+                painter = painterResource(R.drawable.icon_coin),
+                contentDescription = null,
+                modifier = Modifier.size(24.dp)
             )
-            val explosionAlpha by animateFloatAsState(
-                targetValue = if (isHeartBroken) 0f else 0.8f,
-                animationSpec = tween(durationMillis = 500)
-            )
-            Box(contentAlignment = Alignment.Center) {
-                if (isHeartBroken) HeartImageView(true)
-                HeartImageView(
-                    isHeartBroken = false,
-                    modifier = Modifier.graphicsLayer(
-                        scaleX = explosionScale,
-                        scaleY = explosionScale,
-                        alpha = explosionAlpha
+            Spacer(modifier = Modifier.width(8.dp))
+            Text(coin.toString(), style = MaterialTheme.typography.bodyLarge)
+        }
+        Column(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            Row(horizontalArrangement = Arrangement.spacedBy(16.dp, Alignment.End)) {
+                repeat(GameDetailViewModel.MAX_HEART_VALUE) { count ->
+                    val isHeartBroken = count >= heart
+                    val explosionScale by animateFloatAsState(
+                        targetValue = if (isHeartBroken) 3f else 1f,
+                        animationSpec = tween(durationMillis = 500, easing = FastOutSlowInEasing)
                     )
-                )
+                    val explosionAlpha by animateFloatAsState(
+                        targetValue = if (isHeartBroken) 0f else 0.8f,
+                        animationSpec = tween(durationMillis = 500)
+                    )
+                    Box(contentAlignment = Alignment.Center) {
+                        if (isHeartBroken) HeartImageView(true)
+                        HeartImageView(
+                            isHeartBroken = false,
+                            modifier = Modifier.graphicsLayer(
+                                scaleX = explosionScale,
+                                scaleY = explosionScale,
+                                alpha = explosionAlpha
+                            )
+                        )
+                    }
+                }
             }
+            Text(text = stringResource(R.string.score, score))
         }
     }
-    Text(text = stringResource(R.string.score, score))
-}
 
 @Composable
 private fun HeartImageView(isHeartBroken: Boolean, modifier: Modifier = Modifier) = Image(

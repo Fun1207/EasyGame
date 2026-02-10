@@ -23,6 +23,8 @@ class GameDetailViewModel(val gameSensorManager: GameSensorManager) : ViewModel(
 
     var score by mutableIntStateOf(0)
         private set
+    var coin by mutableIntStateOf(0)
+        private set
     var heart by mutableIntStateOf(MAX_HEART_VALUE)
         private set
     var isGamePaused by mutableStateOf(false)
@@ -56,11 +58,16 @@ class GameDetailViewModel(val gameSensorManager: GameSensorManager) : ViewModel(
     private fun generateGameObject() = viewModelScope.launch {
         while (!isGameOver) {
             if (!isGamePaused && gameObjectList.size < APPLES_MAX_SIZE) {
-                val isBomb = Random.nextInt(0, 100) < BOMB_SPAWN_RATE
+                val rate = Random.nextInt(0, 100)
+                val gameObjectType = when {
+                    (rate <= BOMB_SPAWN_RATE) -> GameObjectType.BOMB
+                    (rate < BOMB_SPAWN_RATE + COIN_SPAWN_RATE) -> GameObjectType.COIN
+                    else -> GameObjectType.APPLE
+                }
                 val newApple = GameObject(
                     x = Random.nextFloat(),
                     y = -0.1f,
-                    gameObjectType = if (isBomb) GameObjectType.BOMB else GameObjectType.APPLE
+                    gameObjectType = gameObjectType
                 )
                 gameObjectList = gameObjectList + newApple
                 delay(Random.nextLong(50, 800))
@@ -79,12 +86,14 @@ class GameDetailViewModel(val gameSensorManager: GameSensorManager) : ViewModel(
                         return@filter true
                     }
                     if (apple.x >= basketX - hitBoxSize && apple.x <= basketX + hitBoxSize && apple.y < 1f) {
-                        if (apple.gameObjectType == GameObjectType.BOMB) {
-                            decreaseHeart()
-                            return@filter false
+                        when (apple.gameObjectType) {
+                            GameObjectType.BOMB -> decreaseHeart()
+                            GameObjectType.COIN -> coin += 10
+                            GameObjectType.APPLE -> {
+                                score += 1
+                                if (score.mod(10) == 0 && speedLevel < SPEED_LEVEL_MAX) speedLevel += 0.5f
+                            }
                         }
-                        score += 1
-                        if (score.mod(10) == 0 && speedLevel < SPEED_LEVEL_MAX) speedLevel += 0.5f
                         return@filter false
                     }
                     apple.y < 1.1f
@@ -117,6 +126,7 @@ class GameDetailViewModel(val gameSensorManager: GameSensorManager) : ViewModel(
         private const val SPEED_LEVEL_MAX: Float = 5f
         private const val APPLES_MAX_SIZE: Int = 10
         private const val BOMB_SPAWN_RATE: Int = 13
+        private const val COIN_SPAWN_RATE: Int = 5
         const val MAX_HEART_VALUE: Int = 3
     }
 }
