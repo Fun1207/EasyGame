@@ -19,6 +19,7 @@ import com.example.easygame.R
 fun HomeScreen(
     navigateToGameDetail: () -> Unit = {},
     navigateToHighScore: () -> Unit = {},
+    navigateToStore: () -> Unit = {},
     navigateToSettings: () -> Unit = {},
     quitGame: () -> Unit = {}
 ) {
@@ -37,6 +38,10 @@ fun HomeScreen(
         Button(
             onClick = navigateToHighScore,
             content = { Text(text = stringResource(R.string.high_score)) }
+        )
+        Button(
+            onClick = navigateToStore,
+            content = { Text(text = stringResource(R.string.store)) }
         )
         Button(
             onClick = navigateToSettings,

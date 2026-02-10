@@ -5,6 +5,8 @@ import com.example.easygame.navigation.Screen
 import com.example.easygame.ui.screen.game_detail.GameDetailScreen
 import com.example.easygame.ui.screen.game_detail.GameDetailViewModel
 import com.example.easygame.ui.screen.home.HomeScreen
+import com.example.easygame.ui.screen.store.StoreScreen
+import com.example.easygame.ui.screen.store.StoreViewModel
 import org.koin.compose.viewmodel.koinViewModel
 import org.koin.core.annotation.KoinExperimentalAPI
 import org.koin.dsl.module
@@ -21,6 +23,9 @@ val navigationModule = module {
             navigateToHighScore = {
                 get<Navigator>().navigateTo(destination = Screen.HighScore)
             },
+            navigateToStore = {
+                get<Navigator>().navigateTo(destination = Screen.Store)
+            },
             navigateToSettings = {
                 get<Navigator>().navigateTo(destination = Screen.Settings)
             },
@@ -36,5 +41,9 @@ val navigationModule = module {
             viewModel = koinViewModel<GameDetailViewModel>(),
             onBack = { navigator.popBackStack() }
         )
+    }
+
+    navigation<Screen.Store> {
+        StoreScreen(koinViewModel<StoreViewModel>())
     }
 }
