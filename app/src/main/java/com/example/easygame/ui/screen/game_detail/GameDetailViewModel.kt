@@ -18,7 +18,7 @@ class GameDetailViewModel(val gameSensorManager: GameSensorManager) : ViewModel(
 
     var basketX by mutableFloatStateOf(0.5f)
         private set
-    var appleList by mutableStateOf(listOf<GameObject>())
+    var gameObjectList by mutableStateOf(listOf<GameObject>())
         private set
 
     var score by mutableIntStateOf(0)
@@ -29,7 +29,7 @@ class GameDetailViewModel(val gameSensorManager: GameSensorManager) : ViewModel(
         private set
     var isGameOver by mutableStateOf(false)
         private set
-    var hitBoxSize by mutableFloatStateOf(0f)
+    private var hitBoxSize by mutableFloatStateOf(0f)
     private var speedLevel by mutableFloatStateOf(1f)
 
     init {
@@ -55,14 +55,14 @@ class GameDetailViewModel(val gameSensorManager: GameSensorManager) : ViewModel(
 
     private fun generateGameObject() = viewModelScope.launch {
         while (!isGameOver) {
-            if (!isGamePaused && appleList.size < APPLES_MAX_SIZE) {
+            if (!isGamePaused && gameObjectList.size < APPLES_MAX_SIZE) {
                 val isBomb = Random.nextInt(0, 100) < BOMB_SPAWN_RATE
                 val newApple = GameObject(
                     x = Random.nextFloat(),
                     y = -0.1f,
                     gameObjectType = if (isBomb) GameObjectType.BOMB else GameObjectType.APPLE
                 )
-                appleList = appleList + newApple
+                gameObjectList = gameObjectList + newApple
                 delay(Random.nextLong(50, 800))
             } else delay(FPS_FRAME_RATE_DELAY)
         }
@@ -71,10 +71,10 @@ class GameDetailViewModel(val gameSensorManager: GameSensorManager) : ViewModel(
     private fun moveAppleAndCalculateScore() = viewModelScope.launch {
         while (!isGameOver) {
             if (!isGamePaused) {
-                val currentApples = appleList.map { apple ->
+                val currentApples = gameObjectList.map { apple ->
                     apple.copy(y = apple.y + speedLevel * APPLE_SPEED)
                 }
-                appleList = currentApples.filter { apple ->
+                gameObjectList = currentApples.filter { apple ->
                     if (apple.y < 1f - hitBoxSize * 0.9f) {
                         return@filter true
                     }
@@ -105,6 +105,10 @@ class GameDetailViewModel(val gameSensorManager: GameSensorManager) : ViewModel(
         isGamePaused = isPause
         if (isPause) gameSensorManager.stopListening()
         else gameSensorManager.startListening()
+    }
+
+    fun measureHitBoxSize(size: Float) {
+        hitBoxSize = size
     }
 
     companion object {
