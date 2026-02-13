@@ -1,12 +1,12 @@
 <resources>
     <string name="app_name">EasyGame</string>
-
+    <!--    Home-->
     <string name="play">Play</string>
     <string name="high_score">High Score</string>
     <string name="store">Store</string>
     <string name="settings">Settings</string>
     <string name="quit_game">Quit Game</string>
-
+    <!--    Game Details-->
     <string name="score">Score: %1$d</string>
     <string name="game_paused">Game Paused</string>
     <string name="back_to_game">Back to game</string>
@@ -15,4 +15,8 @@
     <string name="game_over">Game Over</string>
     <string name="game_over_result">You scored %1$d points and earned %2$d coin!</string>
     <string name="back_to_menu">Back to menu</string>
+    <!--    Store-->
+    <string name="game_object_price">%1$d$</string>
+    <string name="buy">Buy</string>
+
 </resources>

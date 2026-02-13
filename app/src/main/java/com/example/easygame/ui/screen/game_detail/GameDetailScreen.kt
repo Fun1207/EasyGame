@@ -39,8 +39,8 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.unit.dp
 import com.example.easygame.R
-import com.example.easygame.data.model.GameObject
-import com.example.easygame.data.model.GameObjectType
+import com.example.easygame.domain.model.GameObject
+import com.example.easygame.domain.model.GameObjectType
 import com.example.easygame.ui.common.GameDialog
 
 @Composable

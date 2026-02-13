@@ -7,8 +7,8 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.easygame.data.model.GameObject
-import com.example.easygame.data.model.GameObjectType
+import com.example.easygame.domain.model.GameObject
+import com.example.easygame.domain.model.GameObjectType
 import com.example.easygame.data.repository.GameSensorManager
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch

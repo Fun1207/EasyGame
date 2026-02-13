@@ -1,4 +1,4 @@
-package com.example.easygame.data.model
+package com.example.easygame.domain.model
 
 data class GameObject(
     val x: Float,
