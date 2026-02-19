@@ -11,7 +11,7 @@
     <string name="game_paused">Game Paused</string>
     <string name="back_to_game">Back to game</string>
     <string name="end_this_round">End this round</string>
-    <string name="are_you_sure">Do you want to end this round with %1$d points?</string>
+    <string name="are_you_sure">Do you want to end this round?\nYou will lose %1$d coins?</string>
     <string name="game_over">Game Over</string>
     <string name="game_over_result">You scored %1$d points and earned %2$d coin!</string>
     <string name="back_to_menu">Back to menu</string>
@@ -20,5 +20,7 @@
     <string name="buy">Buy</string>
     <string name="purchased">Purchased</string>
     <string name="owned">Owned</string>
+    <string name="owned_coin">Coin: %1d$</string>
+    <string name="free">Free</string>
 
 </resources>

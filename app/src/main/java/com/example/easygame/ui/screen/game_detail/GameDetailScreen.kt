@@ -81,7 +81,7 @@ fun ShowGameDialogs(
     )
     if (isGamePaused) GameDialog(
         title = stringResource(R.string.game_paused),
-        content = stringResource(R.string.are_you_sure, score),
+        content = stringResource(R.string.are_you_sure, score + coin),
         cancel = stringResource(R.string.end_this_round),
         onCancel = onBack,
         confirm = stringResource(R.string.back_to_game),

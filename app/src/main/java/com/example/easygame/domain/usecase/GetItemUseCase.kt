@@ -6,7 +6,6 @@ import com.example.easygame.data.remote.FirebaseDataSource
 import com.example.easygame.domain.model.GameObjectType
 import com.example.easygame.domain.model.GetItemState
 import com.example.easygame.domain.model.RemoteGameObject
-import kotlinx.coroutines.flow.flow
 
 class GetItemUseCase(
     private val firebaseDataSource: FirebaseDataSource,
@@ -40,15 +39,15 @@ class GetItemUseCase(
         )
     )
 
-    fun getItemList() = flow {
-        runCatching {
-            val firebaseItems = firebaseDataSource.getGameObjectList()
-            val purchasedItems = purchasedObjectDao.getPurchasedObjects().map { purchasedItem ->
-                purchasedItem.toRemoteGameObject() }
-            val resultItems = inAppItemList + (purchasedItems + firebaseItems).distinctBy { it.id }.sortedBy { it.id }
-            emit(GetItemState.Success(resultItems))
-        }.getOrElse {
-            emit(GetItemState.Error(it.message.toString()))
+    suspend fun getItemList() = runCatching {
+        val firebaseItems = firebaseDataSource.getGameObjectList()
+        val purchasedItems = purchasedObjectDao.getPurchasedObjects().map { purchasedItem ->
+            purchasedItem.toRemoteGameObject()
         }
+        val resultItems =
+            inAppItemList + (purchasedItems + firebaseItems).distinctBy { it.id }.sortedBy { it.id }
+        GetItemState.Success(resultItems)
+    }.getOrElse {
+        GetItemState.Error(it.message.toString())
     }
 }

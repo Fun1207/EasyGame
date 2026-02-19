@@ -7,14 +7,20 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.easygame.data.local.datastore.CoinDataStore
+import com.example.easygame.data.repository.GameSensorManager
 import com.example.easygame.domain.model.GameObject
 import com.example.easygame.domain.model.GameObjectType
-import com.example.easygame.data.repository.GameSensorManager
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.launch
 import kotlin.random.Random
 
-class GameDetailViewModel(val gameSensorManager: GameSensorManager) : ViewModel() {
+class GameDetailViewModel(
+    private val gameSensorManager: GameSensorManager,
+    private val coinDataStore: CoinDataStore
+) : ViewModel() {
 
     var basketX by mutableFloatStateOf(0.5f)
         private set
@@ -108,7 +114,13 @@ class GameDetailViewModel(val gameSensorManager: GameSensorManager) : ViewModel(
         heart -= 1
         if (heart > 0) return
         isGameOver = true
+        updateOwnedCoin()
         gameSensorManager.stopListening()
+    }
+
+    private fun updateOwnedCoin() = viewModelScope.launch(Dispatchers.IO) {
+        val ownedCoin = coinDataStore.coins.firstOrNull() ?: 0L
+        coinDataStore.setCoins(ownedCoin + coin + score)
     }
 
     fun togglePauseGame(isPause: Boolean) {

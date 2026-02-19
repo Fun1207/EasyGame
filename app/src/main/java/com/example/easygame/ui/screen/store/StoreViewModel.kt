@@ -9,7 +9,9 @@ import com.example.easygame.domain.usecase.BuyItemUseCase
 import com.example.easygame.domain.usecase.GetItemUseCase
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 
 class StoreViewModel(
@@ -21,30 +23,50 @@ class StoreViewModel(
     val itemListStateFlow: StateFlow<List<RemoteGameObject>> = _itemListStateFlow
     private val _selectedItemFlow: MutableStateFlow<RemoteGameObject?> = MutableStateFlow(null)
     val selectedItemFlow: StateFlow<RemoteGameObject?> = _selectedItemFlow
-    private val _buyItemFlow: MutableStateFlow<PurchaseState> =
+    private val _enableBuyButtonFlow: MutableStateFlow<Boolean> = MutableStateFlow(false)
+    val enableBuyButtonFlow: StateFlow<Boolean> = _enableBuyButtonFlow
+    private val _purchaseItemFlow: MutableStateFlow<PurchaseState> =
         MutableStateFlow(PurchaseState.Idle)
-    val buyItemFlow: StateFlow<PurchaseState> = _buyItemFlow
+    val purchaseItemFlow: StateFlow<PurchaseState> = _purchaseItemFlow
+    val coinFlow = buyItemUseCase.ownedCoin.stateIn(
+        scope = viewModelScope,
+        started = SharingStarted.Eagerly,
+        initialValue = 0L
+    )
+
+    private val canBuyItem: Boolean
+        get() {
+            val buyingPrice = _selectedItemFlow.value?.price ?: 0L
+            val ownedCoin = coinFlow.value
+            return ownedCoin >= buyingPrice
+        }
 
     init {
         fetchRemoteGameObjectList()
     }
 
     private fun fetchRemoteGameObjectList() = viewModelScope.launch(Dispatchers.IO) {
-        getItemUseCase.getItemList().collect { state ->
-            if (state is GetItemState.Success) _itemListStateFlow.emit(state.remoteGameObjectList)
+        when (val getItemState = getItemUseCase.getItemList()) {
+            is GetItemState.Idle -> Unit
+            is GetItemState.Success -> _itemListStateFlow.emit(getItemState.remoteGameObjectList)
+            is GetItemState.Error -> Unit
         }
     }
 
     fun buyItem() {
-        viewModelScope.launch(Dispatchers.IO) {
-            buyItemUseCase.buyItem(_selectedItemFlow.value ?: return@launch).collect {
-                _buyItemFlow.value = it
+        val buyingItem = _selectedItemFlow.value ?: return
+        if (buyingItem.isPurchased || !canBuyItem) return
+        viewModelScope.launch {
+            _purchaseItemFlow.value = PurchaseState.Loading
+            _purchaseItemFlow.value = buyItemUseCase.buyItem(buyingItem).also { state ->
+                if (state is PurchaseState.Success) fetchRemoteGameObjectList()
             }
-            fetchRemoteGameObjectList()
         }
     }
 
     fun setSelectedGameObject(id: String?) {
-        _selectedItemFlow.value = _itemListStateFlow.value.find { it.id == id }
+        val selectedItem = _itemListStateFlow.value.find { it.id == id }
+        _selectedItemFlow.value = selectedItem
+        _enableBuyButtonFlow.value = canBuyItem && selectedItem?.isPurchased != true
     }
 }
