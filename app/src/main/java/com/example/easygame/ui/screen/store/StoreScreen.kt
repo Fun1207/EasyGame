@@ -65,7 +65,7 @@ fun StoreScreen(viewModel: StoreViewModel, onBack: () -> Unit) = Box(
         viewModel.isShowConfirmDialog,
         viewModel::toggleConfirmDialog
     )
-    HeaderView(ownedCoin, purchaseState)
+    HeaderView(ownedCoin, purchaseState) { viewModel.toggleConfirmDialog(true) }
     GameObjectList(
         Modifier.align(Alignment.CenterStart),
         itemList,
@@ -95,14 +95,15 @@ fun StoreScreen(viewModel: StoreViewModel, onBack: () -> Unit) = Box(
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-private fun HeaderView(ownedCoin: Long, purchaseState: PurchaseState) = Column {
+private fun HeaderView(ownedCoin: Long, purchaseState: PurchaseState, onBack: () -> Unit) = Column {
     CenterAlignedTopAppBar(
         title = {
             Text(stringResource(R.string.store), style = MaterialTheme.typography.headlineLarge)
         },
         navigationIcon = {
             IconButton(
-                onClick = {}, enabled = purchaseState !is PurchaseState.Loading
+                onClick = onBack,
+                enabled = purchaseState !is PurchaseState.Loading
             ) {
                 Icon(
                     painter = painterResource(R.drawable.icon_back),
