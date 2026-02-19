@@ -18,24 +18,6 @@ class GetItemUseCase(
             type = GameObjectType.BASKET.type,
             source = R.drawable.icon_basket,
             isPurchased = true
-        ),
-        RemoteGameObject(
-            name = "Apple",
-            type = GameObjectType.APPLE.type,
-            source = R.drawable.icon_apple,
-            isPurchased = true
-        ),
-        RemoteGameObject(
-            name = "Bomb",
-            type = GameObjectType.BOMB.type,
-            source = R.drawable.icon_bomb,
-            isPurchased = true
-        ),
-        RemoteGameObject(
-            name = "Coin",
-            type = GameObjectType.COIN.type,
-            source = R.drawable.icon_coin,
-            isPurchased = true
         )
     )
 

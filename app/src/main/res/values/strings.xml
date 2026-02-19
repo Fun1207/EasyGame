@@ -22,5 +22,8 @@
     <string name="owned">Owned</string>
     <string name="owned_coin">Coin: %1d$</string>
     <string name="free">Free</string>
-
+    <string name="yes">Yes</string>
+    <string name="no">No</string>
+    <string name="do_you_want_to_select">Do you want to select %1$s to play?</string>
+    <string name="go_back_with_out_changes">Go back without saving changes?</string>
 </resources>

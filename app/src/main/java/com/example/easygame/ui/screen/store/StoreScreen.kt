@@ -1,6 +1,7 @@
 package com.example.easygame.ui.screen.store
 
 import android.widget.Toast
+import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.background
 import androidx.compose.foundation.gestures.snapping.rememberSnapFlingBehavior
 import androidx.compose.foundation.layout.Arrangement
@@ -43,13 +44,14 @@ import coil3.request.ImageRequest
 import com.example.easygame.R
 import com.example.easygame.domain.model.PurchaseState
 import com.example.easygame.domain.model.RemoteGameObject
+import com.example.easygame.ui.common.GameDialog
 import com.example.easygame.ui.common.carouselScaleEffect
 import com.example.easygame.ui.theme.WhiteColor
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlin.math.abs
 
 @Composable
-fun StoreScreen(viewModel: StoreViewModel) = Box(
+fun StoreScreen(viewModel: StoreViewModel, onBack: () -> Unit) = Box(
     modifier = Modifier
         .fillMaxSize()
         .background(WhiteColor),
@@ -59,6 +61,10 @@ fun StoreScreen(viewModel: StoreViewModel) = Box(
     val enableBuyButton by viewModel.enableBuyButtonFlow.collectAsStateWithLifecycle()
     val ownedCoin by viewModel.coinFlow.collectAsStateWithLifecycle()
     val purchaseState by viewModel.purchaseItemFlow.collectAsStateWithLifecycle()
+    BackPressHandler(
+        viewModel.isShowConfirmDialog,
+        viewModel::toggleConfirmDialog
+    )
     HeaderView(ownedCoin, purchaseState)
     GameObjectList(
         Modifier.align(Alignment.CenterStart),
@@ -74,6 +80,16 @@ fun StoreScreen(viewModel: StoreViewModel) = Box(
         enableBuyButton,
         selectedItem?.isPurchased,
         viewModel::buyItem
+    )
+    SelectedItemDialog(
+        selectedItem,
+        viewModel.isShowConfirmDialog,
+        {
+            viewModel.selectedItem()
+            onBack()
+        },
+        { viewModel.toggleConfirmDialog(false) },
+        onBack
     )
 }
 
@@ -206,4 +222,42 @@ private fun PurchaseView(
             style = MaterialTheme.typography.titleSmall
         )
     }
+}
+
+@Composable
+private fun SelectedItemDialog(
+    selectedGameObject: RemoteGameObject?,
+    isShow: Boolean,
+    onYes: () -> Unit,
+    onNo: () -> Unit,
+    onBack: () -> Unit
+) {
+    if (!isShow) return
+    if (selectedGameObject?.isPurchased == true) {
+        GameDialog(
+            content = stringResource(
+                R.string.do_you_want_to_select,
+                selectedGameObject.name.orEmpty()
+            ),
+            confirm = stringResource(R.string.yes),
+            onConfirm = onYes,
+            cancel = stringResource(R.string.no),
+            onCancel = onNo
+        )
+        return
+    }
+    GameDialog(
+        content = stringResource(R.string.go_back_with_out_changes),
+        confirm = stringResource(R.string.yes),
+        onConfirm = onBack
+    )
+}
+
+@Composable
+private fun BackPressHandler(
+    isShowConfirmDialog: Boolean,
+    toggleConfirmDialog: (Boolean) -> Unit
+) = BackHandler(enabled = true) {
+    if (isShowConfirmDialog) toggleConfirmDialog(false)
+    else toggleConfirmDialog(true)
 }

@@ -15,4 +15,5 @@ val databaseModule = module {
     }
 
     factory { get<EasyGameDatabase>().purchasedObjectDao() }
+    factory { get<EasyGameDatabase>().selectedItemDao() }
 }

@@ -1,7 +1,11 @@
 package com.example.easygame.ui.screen.store
 
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.easygame.data.local.dao.SelectedItemDao
 import com.example.easygame.domain.model.GetItemState
 import com.example.easygame.domain.model.PurchaseState
 import com.example.easygame.domain.model.RemoteGameObject
@@ -16,7 +20,8 @@ import kotlinx.coroutines.launch
 
 class StoreViewModel(
     private val getItemUseCase: GetItemUseCase,
-    private val buyItemUseCase: BuyItemUseCase
+    private val buyItemUseCase: BuyItemUseCase,
+    private val selectedItemDao: SelectedItemDao
 ) : ViewModel() {
     private val _itemListStateFlow: MutableStateFlow<List<RemoteGameObject>> =
         MutableStateFlow(emptyList())
@@ -33,6 +38,8 @@ class StoreViewModel(
         started = SharingStarted.Eagerly,
         initialValue = 0L
     )
+    var isShowConfirmDialog by mutableStateOf(false)
+        private set
 
     private val canBuyItem: Boolean
         get() {
@@ -68,5 +75,15 @@ class StoreViewModel(
         val selectedItem = _itemListStateFlow.value.find { it.id == id }
         _selectedItemFlow.value = selectedItem
         _enableBuyButtonFlow.value = canBuyItem && selectedItem?.isPurchased != true
+    }
+
+    fun toggleConfirmDialog(isShow: Boolean) {
+        isShowConfirmDialog = isShow
+    }
+
+    fun selectedItem() = viewModelScope.launch(Dispatchers.IO) {
+        selectedItemDao.insertSelectedItem(
+            _selectedItemFlow.value?.toSelectedItemEntity() ?: return@launch
+        )
     }
 }

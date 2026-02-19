@@ -38,6 +38,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.unit.dp
+import coil3.compose.rememberAsyncImagePainter
 import com.example.easygame.R
 import com.example.easygame.domain.model.GameObject
 import com.example.easygame.domain.model.GameObjectType
@@ -52,7 +53,12 @@ fun GameDetailScreen(viewModel: GameDetailViewModel, onBack: () -> Unit) {
         onBack
     )
     FocusHandler(viewModel.isGameOver, viewModel.isGamePaused, viewModel::togglePauseGame)
-    GameView(viewModel.basketX, viewModel.gameObjectList, viewModel::measureHitBoxSize)
+    GameView(
+        viewModel.basketResource,
+        viewModel.basketX,
+        viewModel.gameObjectList,
+        viewModel::measureHitBoxSize
+    )
     TopBar(viewModel.heart, viewModel.score, viewModel.coin)
     ShowGameDialogs(
         viewModel.score,
@@ -91,12 +97,12 @@ fun ShowGameDialogs(
 
 @Composable
 private fun GameView(
+    basketResource: Any,
     basketX: Float,
     gameObjectList: List<GameObject>,
     onMeasuredSize: (Float) -> Unit
 ) {
-    val arrowVectorPainter =
-        rememberVectorPainter(ImageVector.vectorResource(R.drawable.icon_basket))
+    val arrowVectorPainter = rememberAsyncImagePainter(basketResource)
     val appleVectorPainter =
         rememberVectorPainter(ImageVector.vectorResource(R.drawable.icon_apple))
     val bombVectorPainter =

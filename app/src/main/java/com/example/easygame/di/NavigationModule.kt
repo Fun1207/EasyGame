@@ -36,14 +36,17 @@ val navigationModule = module {
     }
 
     navigation<Screen.GameDetail> {
-        val navigator = get<Navigator>()
+        val navigator = getOrNull<Navigator>()
         GameDetailScreen(
             viewModel = koinViewModel<GameDetailViewModel>(),
-            onBack = { navigator.popBackStack() }
+            onBack = { navigator?.popBackStack() }
         )
     }
 
     navigation<Screen.Store> {
-        StoreScreen(koinViewModel<StoreViewModel>())
+        val navigator = getOrNull<Navigator>()
+        StoreScreen(
+            viewModel = koinViewModel<StoreViewModel>(),
+            onBack = { navigator?.popBackStack() })
     }
 }

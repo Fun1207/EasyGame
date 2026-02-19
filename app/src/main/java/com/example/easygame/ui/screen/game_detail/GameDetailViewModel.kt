@@ -7,6 +7,8 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.easygame.R
+import com.example.easygame.data.local.dao.SelectedItemDao
 import com.example.easygame.data.local.datastore.CoinDataStore
 import com.example.easygame.data.repository.GameSensorManager
 import com.example.easygame.domain.model.GameObject
@@ -19,9 +21,12 @@ import kotlin.random.Random
 
 class GameDetailViewModel(
     private val gameSensorManager: GameSensorManager,
-    private val coinDataStore: CoinDataStore
+    private val coinDataStore: CoinDataStore,
+    private val selectedItemDao: SelectedItemDao
 ) : ViewModel() {
 
+    var basketResource by mutableStateOf<Any>(R.drawable.icon_basket)
+        private set
     var basketX by mutableFloatStateOf(0.5f)
         private set
     var gameObjectList by mutableStateOf(listOf<GameObject>())
@@ -41,6 +46,7 @@ class GameDetailViewModel(
     private var speedLevel by mutableFloatStateOf(1f)
 
     init {
+        getSelectedItem()
         moveBasket()
         moveAppleAndCalculateScore()
         generateGameObject()
@@ -121,6 +127,14 @@ class GameDetailViewModel(
     private fun updateOwnedCoin() = viewModelScope.launch(Dispatchers.IO) {
         val ownedCoin = coinDataStore.coins.firstOrNull() ?: 0L
         coinDataStore.setCoins(ownedCoin + coin + score)
+    }
+
+    private fun getSelectedItem() {
+        viewModelScope.launch(Dispatchers.IO) {
+            val selectedBasket =
+                selectedItemDao.getSelectedItemsByType(GameObjectType.BASKET) ?: return@launch
+            basketResource = selectedBasket.source ?: return@launch
+        }
     }
 
     fun togglePauseGame(isPause: Boolean) {
