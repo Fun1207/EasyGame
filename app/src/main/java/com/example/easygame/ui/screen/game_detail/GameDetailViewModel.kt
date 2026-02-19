@@ -93,6 +93,7 @@ class GameDetailViewModel(val gameSensorManager: GameSensorManager) : ViewModel(
                                 score += 1
                                 if (score.mod(10) == 0 && speedLevel < SPEED_LEVEL_MAX) speedLevel += 0.5f
                             }
+                            else -> Unit
                         }
                         return@filter false
                     }

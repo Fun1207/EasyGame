@@ -8,15 +8,11 @@ import androidx.lifecycle.viewmodel.navigation3.rememberViewModelStoreNavEntryDe
 import androidx.navigation3.runtime.rememberSaveableStateHolderNavEntryDecorator
 import androidx.navigation3.ui.NavDisplay
 import com.example.easygame.navigation.Navigator
-import org.koin.android.ext.android.get
-import org.koin.android.scope.AndroidScopeComponent
 import org.koin.androidx.compose.navigation3.getEntryProvider
-import org.koin.androidx.scope.activityScope
+import org.koin.compose.koinInject
 import org.koin.core.annotation.KoinExperimentalAPI
 
-class MainActivity : ComponentActivity(), AndroidScopeComponent {
-
-    override val scope by activityScope()
+class MainActivity : ComponentActivity() {
 
     @OptIn(KoinExperimentalAPI::class)
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -24,10 +20,9 @@ class MainActivity : ComponentActivity(), AndroidScopeComponent {
 
         enableEdgeToEdge()
         setContent {
-            val navigator: Navigator = get<Navigator>().apply {
+            val navigator = koinInject<Navigator>().apply {
                 setOnQuitApplication { finishAndRemoveTask() }
             }
-
             NavDisplay(
                 backStack = navigator.backStack,
                 onBack = navigator::popBackStack,

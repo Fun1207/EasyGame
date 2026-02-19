@@ -10,8 +10,10 @@
 .DS_Store
 /build
 /captures
+/.idea
 .externalNativeBuild
 .cxx
 local.properties
 .idea/inspectionProfiles/Project_Default.xml
 app/google-services.json
+gradle/gradle-daemon-jvm.properties

@@ -6,4 +6,4 @@ data class GameObject(
     var gameObjectType: GameObjectType = GameObjectType.APPLE
 )
 
-enum class GameObjectType { APPLE, BOMB, COIN }
+enum class GameObjectType(val type: String) { APPLE("apple"), BOMB("bomb"), COIN("coin"), BASKET("basket") }

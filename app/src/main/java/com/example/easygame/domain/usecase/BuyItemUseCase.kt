@@ -33,16 +33,6 @@ class BuyItemUseCase(
 
     fun buyItem(remoteGameObject: RemoteGameObject) = flow {
         emit(PurchaseState.Loading)
-        val remoteVersion = remoteGameObject.getVersion()
-        if (remoteGameObject.id !in purchasedObjectDao.getPurchasedObjectIds()) {
-            emit(downloadItem(remoteGameObject))
-            return@flow
-        }
-        val localVersion = purchasedObjectDao.getPurchasedObjectVersion(remoteGameObject.id)
-        if (remoteVersion == localVersion) {
-            emit(PurchaseState.Error(Throwable(ITEM_ALREADY_OWNED_ERROR)))
-            return@flow
-        }
         emit(downloadItem(remoteGameObject))
     }
 

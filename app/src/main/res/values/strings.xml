@@ -18,5 +18,7 @@
     <!--    Store-->
     <string name="game_object_price">%1$d$</string>
     <string name="buy">Buy</string>
+    <string name="purchased">Purchased</string>
+    <string name="owned">Owned</string>
 
 </resources>

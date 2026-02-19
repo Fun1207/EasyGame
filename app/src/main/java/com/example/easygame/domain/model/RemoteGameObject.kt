@@ -9,27 +9,19 @@ data class RemoteGameObject(
     val id: String? = null,
     @PropertyName("Name")
     val name: String? = null,
+    @PropertyName("Type")
+    val type: String? = null,
     @PropertyName("Price")
     val price: Long? = null,
     @PropertyName("Source")
-    val source: String? = null
+    val source: Any? = null,
+    val isPurchased: Boolean = false
 ) {
-    fun getVersion(): String? {
-        val versionRegex = VERSION_PATTERN.toRegex()
-        val groupValues = versionRegex.find(source ?: return null)
-        return groupValues?.groupValues?.lastOrNull()
-    }
-
-    fun toPurchasedEntityOrNull(path: String?): PurchasedObjectEntity? {
-        return PurchasedObjectEntity(
-            id = id ?: return null,
-            objectName = name ?: return null,
-            version = getVersion() ?: return null,
-            localPath = path ?: return null
-        )
-    }
-
-    private companion object {
-        const val VERSION_PATTERN = "/v(\\d+)/"
-    }
+    fun toPurchasedEntityOrNull(path: String?): PurchasedObjectEntity? = PurchasedObjectEntity(
+        id = id ?: return null,
+        objectName = name.orEmpty(),
+        type = type ?: GameObjectType.APPLE.type,
+        price = price ?: 0L,
+        localPath = path ?: return null
+    )
 }

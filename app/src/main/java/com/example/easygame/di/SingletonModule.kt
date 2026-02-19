@@ -1,13 +1,16 @@
 package com.example.easygame.di
 
 import coil3.ImageLoader
+import com.example.easygame.MainActivity
 import com.example.easygame.data.remote.FirebaseDataSource
 import com.example.easygame.data.repository.GameResourceRepository
 import com.example.easygame.data.repository.GameSensorManager
 import com.example.easygame.domain.usecase.BuyItemUseCase
+import com.example.easygame.domain.usecase.GetItemUseCase
 import com.example.easygame.navigation.Navigator
 import com.example.easygame.navigation.Screen
 import org.koin.android.ext.koin.androidContext
+import org.koin.androidx.scope.dsl.activityRetainedScope
 import org.koin.dsl.module
 
 val singletonModule = module {
@@ -17,4 +20,5 @@ val singletonModule = module {
     single { ImageLoader.Builder(androidContext()).build() }
     single { GameResourceRepository(androidContext(), get()) }
     single { BuyItemUseCase(get(), get()) }
+    single { GetItemUseCase(get(), get()) }
 }

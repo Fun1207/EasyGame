@@ -137,6 +137,7 @@ private fun GameView(
                             GameObjectType.APPLE -> appleVectorPainter
                             GameObjectType.BOMB -> bombVectorPainter
                             GameObjectType.COIN -> coinVectorPainter
+                            else -> return@withTransform
                         }
                     ) {
                         draw(Size(objectSize, objectSize))
