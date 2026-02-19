@@ -1,3 +1,29 @@
 <resources>
     <string name="app_name">EasyGame</string>
+    <!--    Home-->
+    <string name="play">Play</string>
+    <string name="high_score">High Score</string>
+    <string name="store">Store</string>
+    <string name="settings">Settings</string>
+    <string name="quit_game">Quit Game</string>
+    <!--    Game Details-->
+    <string name="score">Score: %1$d</string>
+    <string name="game_paused">Game Paused</string>
+    <string name="back_to_game">Back to game</string>
+    <string name="end_this_round">End this round</string>
+    <string name="are_you_sure">Do you want to end this round?\nYou will lose %1$d coins?</string>
+    <string name="game_over">Game Over</string>
+    <string name="game_over_result">You scored %1$d points and earned %2$d coin!</string>
+    <string name="back_to_menu">Back to menu</string>
+    <!--    Store-->
+    <string name="game_object_price">%1$d$</string>
+    <string name="buy">Buy</string>
+    <string name="purchased">Purchased</string>
+    <string name="owned">Owned</string>
+    <string name="owned_coin">Coin: %1d$</string>
+    <string name="free">Free</string>
+    <string name="yes">Yes</string>
+    <string name="no">No</string>
+    <string name="do_you_want_to_select">Do you want to select %1$s to play?</string>
+    <string name="go_back_with_out_changes">Go back without saving changes?</string>
 </resources>
