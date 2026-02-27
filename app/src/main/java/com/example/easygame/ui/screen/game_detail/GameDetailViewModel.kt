@@ -3,13 +3,16 @@ package com.example.easygame.ui.screen.game_detail
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.easygame.R
+import com.example.easygame.data.local.dao.HighScoreDao
 import com.example.easygame.data.local.dao.SelectedItemDao
 import com.example.easygame.data.local.datastore.CoinDataStore
+import com.example.easygame.data.local.entities.HighScoreEntity
 import com.example.easygame.data.repository.GameSensorManager
 import com.example.easygame.domain.model.GameObject
 import com.example.easygame.domain.model.GameObjectType
@@ -17,12 +20,14 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.launch
+import java.util.Date
 import kotlin.random.Random
 
 class GameDetailViewModel(
     private val gameSensorManager: GameSensorManager,
     private val coinDataStore: CoinDataStore,
-    private val selectedItemDao: SelectedItemDao
+    private val selectedItemDao: SelectedItemDao,
+    private val highScoreDao: HighScoreDao
 ) : ViewModel() {
 
     var basketResource by mutableStateOf<Any>(R.drawable.icon_basket)
@@ -32,7 +37,7 @@ class GameDetailViewModel(
     var gameObjectList by mutableStateOf(listOf<GameObject>())
         private set
 
-    var score by mutableIntStateOf(0)
+    var score by mutableLongStateOf(0)
         private set
     var coin by mutableIntStateOf(0)
         private set
@@ -121,12 +126,25 @@ class GameDetailViewModel(
         if (heart > 0) return
         isGameOver = true
         updateOwnedCoin()
+        updateHighScore()
         gameSensorManager.stopListening()
     }
 
     private fun updateOwnedCoin() = viewModelScope.launch(Dispatchers.IO) {
         val ownedCoin = coinDataStore.coins.firstOrNull() ?: 0L
         coinDataStore.setCoins(ownedCoin + coin + score)
+    }
+
+    private fun updateHighScore() {
+        viewModelScope.launch(Dispatchers.IO) {
+            val highScores = highScoreDao.getHighScores()
+            if (highScores.size < 5) {
+                highScoreDao.upsertHighScore(HighScoreEntity(name = "Player", score = score, time = Date().time))
+                return@launch
+            }
+            val lowestHighScore = highScores.lastOrNull() ?: return@launch
+            highScoreDao.upsertHighScore(lowestHighScore.copy(score = score, time = Date().time))
+        }
     }
 
     private fun getSelectedItem() {

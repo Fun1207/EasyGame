@@ -72,7 +72,7 @@ fun GameDetailScreen(viewModel: GameDetailViewModel, onBack: () -> Unit) {
 
 @Composable
 fun ShowGameDialogs(
-    score: Int,
+    score: Long,
     coin: Int,
     isGameOver: Boolean,
     isGamePaused: Boolean,
@@ -155,7 +155,7 @@ private fun GameView(
 }
 
 @Composable
-private fun TopBar(heart: Int, score: Int, coin: Int) =
+private fun TopBar(heart: Int, score: Long, coin: Int) =
     Box(Modifier.padding(16.dp), contentAlignment = Alignment.CenterEnd) {
         Row {
             Image(
