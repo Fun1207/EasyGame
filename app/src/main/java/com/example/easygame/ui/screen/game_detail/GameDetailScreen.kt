@@ -38,33 +38,42 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil3.compose.rememberAsyncImagePainter
 import com.example.easygame.R
 import com.example.easygame.domain.model.GameObject
 import com.example.easygame.domain.model.GameObjectType
+import com.example.easygame.domain.usecase.ControlGameUseCase
 import com.example.easygame.ui.common.GameDialog
 
 @Composable
 fun GameDetailScreen(viewModel: GameDetailViewModel, onBack: () -> Unit) {
+    val isGameOver by viewModel.isGameOver.collectAsStateWithLifecycle()
+    val isGamePaused by viewModel.isGamePaused.collectAsStateWithLifecycle()
+    val basketX by viewModel.basketX.collectAsStateWithLifecycle()
+    val gameObjectList by viewModel.gameObjectList.collectAsStateWithLifecycle()
+    val score by viewModel.score.collectAsStateWithLifecycle()
+    val coin by viewModel.coin.collectAsStateWithLifecycle()
+    val heart by viewModel.heart.collectAsStateWithLifecycle()
+
     BackPressHandler(
-        viewModel.isGameOver,
-        viewModel.isGamePaused,
+        isGameOver,
+        isGamePaused,
         viewModel::togglePauseGame,
         onBack
     )
-    FocusHandler(viewModel.isGameOver, viewModel.isGamePaused, viewModel::togglePauseGame)
+    FocusHandler(isGameOver, isGamePaused, viewModel::togglePauseGame)
     GameView(
         viewModel.basketResource,
-        viewModel.basketX,
-        viewModel.gameObjectList,
-        viewModel::measureHitBoxSize
+        basketX,
+        gameObjectList
     )
-    TopBar(viewModel.heart, viewModel.score, viewModel.coin)
+    TopBar(heart, score, coin)
     ShowGameDialogs(
-        viewModel.score,
-        viewModel.coin,
-        viewModel.isGameOver,
-        viewModel.isGamePaused,
+        score,
+        coin,
+        isGameOver,
+        isGamePaused,
         onBack,
         viewModel::togglePauseGame
     )
@@ -73,7 +82,7 @@ fun GameDetailScreen(viewModel: GameDetailViewModel, onBack: () -> Unit) {
 @Composable
 fun ShowGameDialogs(
     score: Long,
-    coin: Int,
+    coin: Long,
     isGameOver: Boolean,
     isGamePaused: Boolean,
     onBack: () -> Unit,
@@ -99,8 +108,7 @@ fun ShowGameDialogs(
 private fun GameView(
     basketResource: Any,
     basketX: Float,
-    gameObjectList: List<GameObject>,
-    onMeasuredSize: (Float) -> Unit
+    gameObjectList: List<GameObject>
 ) {
     val arrowVectorPainter = rememberAsyncImagePainter(basketResource)
     val appleVectorPainter =
@@ -116,7 +124,6 @@ private fun GameView(
             .padding(horizontal = 24.dp, vertical = 64.dp)
             .onSizeChanged { size ->
                 objectSize = size.width * 0.1f
-                if (size.width > 0) onMeasuredSize(objectSize / size.width)
             },
         contentAlignment = Alignment.TopCenter
     ) {
@@ -155,7 +162,7 @@ private fun GameView(
 }
 
 @Composable
-private fun TopBar(heart: Int, score: Long, coin: Int) =
+private fun TopBar(heart: Int, score: Long, coin: Long) =
     Box(Modifier.padding(16.dp), contentAlignment = Alignment.CenterEnd) {
         Row {
             Image(
@@ -171,7 +178,7 @@ private fun TopBar(heart: Int, score: Long, coin: Int) =
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             Row(horizontalArrangement = Arrangement.spacedBy(16.dp, Alignment.End)) {
-                repeat(GameDetailViewModel.MAX_HEART_VALUE) { count ->
+                repeat(ControlGameUseCase.MAX_HP) { count ->
                     val isHeartBroken = count >= heart
                     val explosionScale by animateFloatAsState(
                         targetValue = if (isHeartBroken) 3f else 1f,
