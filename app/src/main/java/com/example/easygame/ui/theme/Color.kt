@@ -11,3 +11,9 @@ val PurpleGrey40 = Color(0xFF625b71)
 val Pink40 = Color(0xFF7D5260)
 val BackgroundColor = Color(0x80000000)
 val WhiteColor = Color(0xFFFFFFFF)
+
+object ApplicationColor {
+    val cosmos = Color(0xFF1F2937)
+    val white = Color(0xFFFFFFFF)
+    val hydrocarbon = Color(0xFF4B5563)
+}
