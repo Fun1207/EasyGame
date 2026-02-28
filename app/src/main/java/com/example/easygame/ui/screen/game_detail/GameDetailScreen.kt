@@ -75,7 +75,8 @@ fun GameDetailScreen(viewModel: GameDetailViewModel, onBack: () -> Unit) {
         isGameOver,
         isGamePaused,
         onBack,
-        viewModel::togglePauseGame
+        viewModel::togglePauseGame,
+        viewModel::quitGame
     )
 }
 
@@ -86,7 +87,8 @@ fun ShowGameDialogs(
     isGameOver: Boolean,
     isGamePaused: Boolean,
     onBack: () -> Unit,
-    onTogglePause: (Boolean) -> Unit
+    onTogglePause: (Boolean) -> Unit,
+    onQuitGame: () -> Unit
 ) {
     if (isGameOver) GameDialog(
         title = stringResource(R.string.game_over),
@@ -98,7 +100,10 @@ fun ShowGameDialogs(
         title = stringResource(R.string.game_paused),
         content = stringResource(R.string.are_you_sure, score + coin),
         cancel = stringResource(R.string.end_this_round),
-        onCancel = onBack,
+        onCancel = {
+            onQuitGame()
+            onBack()
+        },
         confirm = stringResource(R.string.back_to_game),
         onConfirm = { onTogglePause(false) }
     )

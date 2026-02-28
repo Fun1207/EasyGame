@@ -20,7 +20,6 @@ class GameDetailViewModel(
 
     var basketResource by mutableStateOf<Any>(R.drawable.icon_basket)
         private set
-
     val basketX = controlGameUseCase.basketX.toStateFlow(viewModelScope)
     val gameObjectList = controlGameUseCase.gameObjectList.toStateFlow(viewModelScope)
     val score = controlGameUseCase.score.toStateFlow(viewModelScope)
@@ -37,13 +36,6 @@ class GameDetailViewModel(
         }
     }
 
-    override fun onCleared() {
-        viewModelScope.launch {
-            controlGameUseCase.quitGame()
-        }
-        super.onCleared()
-    }
-
     private fun getSelectedItem() {
         viewModelScope.launch(Dispatchers.IO) {
             val selectedBasket =
@@ -53,4 +45,8 @@ class GameDetailViewModel(
     }
 
     fun togglePauseGame(isPause: Boolean) = controlGameUseCase.togglePause(isPause)
+
+    fun quitGame() = viewModelScope.launch {
+        controlGameUseCase.quitGame()
+    }
 }

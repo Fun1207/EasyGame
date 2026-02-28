@@ -89,11 +89,14 @@ class ControlGameUseCase(
     }
 
     private suspend fun updateOwnedCoin() = withContext(Dispatchers.IO) {
+        val earnedCoins = coin.value + score.value
+        if (earnedCoins <= 0) return@withContext
         val ownedCoin = coinDataStore.coins.firstOrNull() ?: 0L
-        coinDataStore.setCoins(ownedCoin + coin.value + score.value)
+        coinDataStore.setCoins(ownedCoin + earnedCoins)
     }
 
     private suspend fun updateHighScore() = withContext(Dispatchers.IO) {
+        if (score.value <= 0) return@withContext
         val highScores = highScoreDao.getHighScores()
         if (highScores.size < 5) {
             highScoreDao.upsertHighScore(
