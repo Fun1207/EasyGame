@@ -27,4 +27,10 @@
     <string name="no">No</string>
     <string name="do_you_want_to_select">Do you want to select %1$s to play?</string>
     <string name="go_back_with_out_changes">Go back without saving changes?</string>
+    <!--    High Score-->
+    <string name="back">Back</string>
+    <string name="leaderboard">Leaderboard</string>
+    <string name="top_apple_catcher">Top Apple Catcher</string>
+    <string name="no_score_yet">No scores yet!</string>
+    <string name="be_the_first_to_catch_some_apples">Be the first to catch some apples!</string>
 </resources>

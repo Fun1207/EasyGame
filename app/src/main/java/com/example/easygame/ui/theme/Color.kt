@@ -16,4 +16,11 @@ object ApplicationColor {
     val cosmos = Color(0xFF1F2937)
     val white = Color(0xFFFFFFFF)
     val hydrocarbon = Color(0xFF4B5563)
+    val coolGreen = Color(0xFFDCFCE7)
+    val motherboardGreen = Color(0xFF166534)
+    val freshGold = Color(0xFFFCD34D)
+    val silverSteel = Color(0xFF9CA3AF)
+    val darkTangerine = Color(0xFFD97706)
+    val titaniumWhite = Color(0xFFF3F4F6)
+    val sharkGray = Color(0xFF6B7280)
 }
