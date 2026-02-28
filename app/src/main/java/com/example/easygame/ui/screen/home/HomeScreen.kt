@@ -11,10 +11,10 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.safeContentPadding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Icon
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
@@ -35,6 +35,7 @@ import com.example.easygame.BuildConfig
 import com.example.easygame.R
 import com.example.easygame.ui.theme.ApplicationColor
 import com.example.easygame.ui.theme.Dimen
+import com.example.easygame.ui.theme.Typography
 
 @Preview
 @Composable
@@ -54,6 +55,7 @@ fun HomeScreen(
         modifier = Modifier
             .fillMaxSize()
             .background(gradient)
+            .safeContentPadding()
     ) {
         Column(
             modifier = Modifier
@@ -65,7 +67,7 @@ fun HomeScreen(
             Image(painterResource(R.drawable.icon_game_logo), contentDescription = null)
             Text(
                 text = "AeroApple",
-                style = MaterialTheme.typography.headlineLarge,
+                style = Typography.headlineLarge,
                 fontWeight = FontWeight.Bold
             )
         }
@@ -151,7 +153,7 @@ private fun HomeButton(
         Spacer(Modifier.width(Dimen.twelve))
         Text(
             text = stringResource(textResource),
-            style = MaterialTheme.typography.titleSmall,
+            style = Typography.titleSmall,
             fontWeight = FontWeight.Bold,
             color = textColor
         )
