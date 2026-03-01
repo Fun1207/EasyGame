@@ -58,6 +58,9 @@ dependencies {
     debugImplementation(libs.androidx.compose.ui.tooling)
     debugImplementation(libs.androidx.compose.ui.test.manifest)
 
+    //Google Font
+    implementation(libs.ui.text.google.fonts)
+
     //Navigation 3
     implementation(libs.androidx.navigation3.ui)
     implementation(libs.androidx.navigation3.runtime)

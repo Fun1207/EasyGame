@@ -15,6 +15,7 @@ import androidx.compose.foundation.layout.safeContentPadding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
@@ -33,9 +34,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import com.example.easygame.BuildConfig
 import com.example.easygame.R
-import com.example.easygame.ui.theme.ApplicationColor
 import com.example.easygame.ui.theme.Dimen
-import com.example.easygame.ui.theme.Typography
 
 @Preview
 @Composable
@@ -66,9 +65,8 @@ fun HomeScreen(
         ) {
             Image(painterResource(R.drawable.icon_game_logo), contentDescription = null)
             Text(
-                text = "AeroApple",
-                style = Typography.headlineLarge,
-                fontWeight = FontWeight.Bold
+                text = stringResource(R.string.app_name),
+                style = MaterialTheme.typography.headlineLarge
             )
         }
         Column(
@@ -77,8 +75,8 @@ fun HomeScreen(
             verticalArrangement = Arrangement.Center
         ) {
             HomeButton(
-                backgroundColor = ApplicationColor.cosmos,
-                textColor = ApplicationColor.white,
+                backgroundColor = MaterialTheme.colorScheme.secondary,
+                textColor = MaterialTheme.colorScheme.onSecondary,
                 onClick = navigateToGameDetail
             )
             Spacer(Modifier.height(Dimen.twentyFour))
@@ -88,7 +86,6 @@ fun HomeScreen(
                 onClick = navigateToHighScore
             )
             Spacer(Modifier.height(Dimen.twentyFour))
-
             HomeButton(
                 textResource = R.string.store,
                 iconResource = R.drawable.icon_store,
@@ -104,10 +101,12 @@ fun HomeScreen(
             TextButton(quitGame) {
                 Text(
                     text = stringResource(R.string.quit_game),
-                    color = ApplicationColor.hydrocarbon,
                     modifier = Modifier.padding(
                         vertical = Dimen.twelve, horizontal = Dimen.thirtyTwo
-                    )
+                    ),
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurface,
+                    fontWeight = FontWeight.ExtraBold
                 )
             }
         }
@@ -120,7 +119,8 @@ fun HomeScreen(
                 .padding(Dimen.eight)
                 .alpha(0.5f),
             textAlign = TextAlign.Center,
-            color = ApplicationColor.hydrocarbon
+            color = MaterialTheme.colorScheme.onSurface,
+            style = MaterialTheme.typography.bodySmall
         )
     }
 }
@@ -128,7 +128,7 @@ fun HomeScreen(
 @Preview
 @Composable
 private fun HomeButton(
-    backgroundColor: Color = ApplicationColor.white,
+    backgroundColor: Color = MaterialTheme.colorScheme.surface,
     iconResource: Int = R.drawable.icon_play,
     textResource: Int = R.string.play,
     textColor: Color = Color.Black,
@@ -153,8 +153,7 @@ private fun HomeButton(
         Spacer(Modifier.width(Dimen.twelve))
         Text(
             text = stringResource(textResource),
-            style = Typography.titleSmall,
-            fontWeight = FontWeight.Bold,
+            style = MaterialTheme.typography.titleSmall,
             color = textColor
         )
     }
