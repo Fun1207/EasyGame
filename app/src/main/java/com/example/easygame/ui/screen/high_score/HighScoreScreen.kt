@@ -21,13 +21,12 @@ import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
@@ -39,9 +38,11 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.easygame.R
 import com.example.easygame.data.local.entities.HighScoreEntity
 import com.example.easygame.domain.util.toDateTime
-import com.example.easygame.ui.theme.ApplicationColor
+import com.example.easygame.ui.theme.DarkTangerine
 import com.example.easygame.ui.theme.Dimen
-import com.example.easygame.ui.theme.Typography
+import com.example.easygame.ui.theme.FreshGold
+import com.example.easygame.ui.theme.SharkGray
+import com.example.easygame.ui.theme.SilverSteel
 
 @Composable
 fun HighScoreScreen(viewModel: HighScoreViewModel, onBack: () -> Unit) {
@@ -49,23 +50,23 @@ fun HighScoreScreen(viewModel: HighScoreViewModel, onBack: () -> Unit) {
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(ApplicationColor.coolGreen)
+            .background(MaterialTheme.colorScheme.background)
             .safeContentPadding()
-            .padding(horizontal = Dimen.sixteen), horizontalAlignment = Alignment.CenterHorizontally
+            .padding(horizontal = Dimen.sixteen),
+        horizontalAlignment = Alignment.CenterHorizontally
     ) {
         Spacer(Modifier.height(Dimen.twentyFour))
         Text(
             text = stringResource(R.string.leaderboard),
-            style = Typography.headlineMedium,
+            style = MaterialTheme.typography.headlineMedium,
             fontWeight = FontWeight.Bold,
-            color = ApplicationColor.motherboardGreen
+            color = MaterialTheme.colorScheme.primaryContainer
         )
         Spacer(Modifier.height(Dimen.four))
         Text(
             text = stringResource(R.string.top_apple_catcher),
-            style = Typography.titleSmall,
-            color = ApplicationColor.motherboardGreen,
-            modifier = Modifier.alpha(0.7f)
+            style = MaterialTheme.typography.titleSmall,
+            color = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.7f)
         )
         val modifier = Modifier.weight(1f)
         if (highScores.isEmpty()) EmptyHighScoreView(modifier = modifier)
@@ -75,7 +76,7 @@ fun HighScoreScreen(viewModel: HighScoreViewModel, onBack: () -> Unit) {
                 .padding(Dimen.twentyFour)
                 .fillMaxWidth()
                 .clip(RoundedCornerShape(Dimen.twentyFour))
-                .background(ApplicationColor.white)
+                .background(MaterialTheme.colorScheme.surface)
                 .clickable(onClick = onBack)
                 .padding(horizontal = Dimen.twentyFour, vertical = Dimen.sixteen),
             verticalAlignment = Alignment.CenterVertically,
@@ -85,7 +86,7 @@ fun HighScoreScreen(viewModel: HighScoreViewModel, onBack: () -> Unit) {
             Spacer(Modifier.width(Dimen.eight))
             Text(
                 text = stringResource(R.string.back),
-                style = Typography.titleSmall,
+                style = MaterialTheme.typography.titleSmall,
                 fontWeight = FontWeight.Bold
             )
         }
@@ -108,33 +109,26 @@ private fun HighScoreList(modifier: Modifier = Modifier, highScores: List<HighSc
 @Preview
 @Composable
 private fun HighScoreItem(
-    index: Int = 3,
-    highScoreEntity: HighScoreEntity = HighScoreEntity(
-        name = "AppleMaster 1",
-        score = 15400,
-        time = 1771840816045
+    index: Int = 3, highScoreEntity: HighScoreEntity = HighScoreEntity(
+        name = "AppleMaster 1", score = 15400, time = 1771840816045
     )
 ) {
-    val iconResource = remember {
-        when (index) {
-            0, 1, 2 -> R.drawable.icon_high_score_cup
-            else -> null
-        }
+    val iconResource = when (index) {
+        0, 1, 2 -> R.drawable.icon_high_score_cup
+        else -> null
     }
-    val iconColor = remember {
-        when (index) {
-            0 -> ApplicationColor.freshGold
-            1 -> ApplicationColor.silverSteel
-            2 -> ApplicationColor.darkTangerine
-            else -> ApplicationColor.sharkGray
-        }
+    val iconColor = when (index) {
+        0 -> FreshGold
+        1 -> SilverSteel
+        2 -> DarkTangerine
+        else -> SharkGray
     }
     Row(
         Modifier
             .padding(Dimen.eight)
             .fillMaxWidth()
             .clip(RoundedCornerShape(Dimen.twentyFour))
-            .background(ApplicationColor.white)
+            .background(MaterialTheme.colorScheme.surface)
             .padding(Dimen.twenty),
         verticalAlignment = Alignment.CenterVertically
     ) {
@@ -152,12 +146,12 @@ private fun HighScoreItem(
                 )
             } else Text(
                 text = "${index + 1}",
-                style = Typography.titleMedium,
+                style = MaterialTheme.typography.titleMedium,
                 fontWeight = FontWeight.Bold,
                 overflow = TextOverflow.Ellipsis,
                 maxLines = 1,
                 textAlign = TextAlign.Center,
-                color = ApplicationColor.sharkGray,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
                 modifier = Modifier.sizeIn(Dimen.twentyThree)
             )
         }
@@ -167,18 +161,21 @@ private fun HighScoreItem(
         ) {
             Text(
                 text = highScoreEntity.name,
-                style = Typography.titleMedium,
+                style = MaterialTheme.typography.bodyLarge,
                 fontWeight = FontWeight.Bold,
                 overflow = TextOverflow.Ellipsis,
                 maxLines = 1
             )
-            Text(highScoreEntity.time.toDateTime().orEmpty())
+            Spacer(Modifier.height(Dimen.six))
+            Text(
+                text = highScoreEntity.time.toDateTime().orEmpty(),
+                style = MaterialTheme.typography.bodySmall,
+            )
         }
         Text(
             text = highScoreEntity.score.toString(),
-            color = ApplicationColor.cosmos,
-            fontWeight = FontWeight.SemiBold,
-            style = Typography.titleSmall
+            color = MaterialTheme.colorScheme.secondary,
+            style = MaterialTheme.typography.titleSmall
         )
     }
 }
@@ -190,7 +187,7 @@ private fun EmptyHighScoreView(modifier: Modifier = Modifier) {
         modifier
             .fillMaxWidth()
             .padding(horizontal = Dimen.twentyFour, vertical = Dimen.thirtyTwo)
-            .background(ApplicationColor.white, RoundedCornerShape(Dimen.thirtyTwo)),
+            .background(MaterialTheme.colorScheme.surface, RoundedCornerShape(Dimen.thirtyTwo)),
         verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
@@ -200,24 +197,29 @@ private fun EmptyHighScoreView(modifier: Modifier = Modifier) {
                     .padding(Dimen.eight)
                     .size(Dimen.oneHundredTwentyEight)
                     .clip(CircleShape)
-                    .background(ApplicationColor.coolGreen), contentAlignment = Alignment.Center
+                    .background(MaterialTheme.colorScheme.background),
+                contentAlignment = Alignment.Center
             ) {
-                Image(painterResource(R.drawable.icon_empty_high_score), contentDescription = null)
+                Image(
+                    painter = painterResource(R.drawable.icon_empty_high_score),
+                    contentDescription = null,
+                    modifier = Modifier.size(height = Dimen.fiftyTwo, width = Dimen.fortyFour)
+                )
             }
             Image(painterResource(R.drawable.icon_leaf), contentDescription = null)
         }
         Spacer(Modifier.height(Dimen.thirtyTwo))
         Text(
             text = stringResource(R.string.no_score_yet),
-            color = ApplicationColor.cosmos,
-            style = Typography.headlineSmall
+            color = MaterialTheme.colorScheme.secondary,
+            style = MaterialTheme.typography.titleLarge
         )
         Spacer(Modifier.height(Dimen.eight))
         Text(
             stringResource(R.string.be_the_first_to_catch_some_apples),
             modifier = Modifier.padding(horizontal = Dimen.twentyFour),
-            color = ApplicationColor.sharkGray,
-            style = Typography.titleMedium,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            style = MaterialTheme.typography.bodyLarge,
             textAlign = TextAlign.Center
         )
     }
