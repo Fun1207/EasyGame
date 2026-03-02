@@ -32,10 +32,12 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.Dp
 import coil3.compose.AsyncImage
 import coil3.request.ImageRequest
 import com.example.easygame.R
 import com.example.easygame.domain.model.RemoteGameObject
+import com.example.easygame.ui.common.shimmerEffect
 import com.example.easygame.ui.theme.Dimen
 import com.example.easygame.ui.theme.Transparent
 
@@ -47,6 +49,10 @@ fun StoreItemList(
     onBuyClick: () -> Unit,
     onSelected: (RemoteGameObject) -> Unit
 ) {
+    if (itemList.isEmpty()) {
+        EmptyItemList(modifier)
+        return
+    }
     val pageState = rememberPagerState(pageCount = itemList::size)
     HorizontalPager(
         state = pageState,
@@ -97,8 +103,8 @@ private fun StoreItemCardView(
                     .weight(1f), contentAlignment = Alignment.Center
             ) {
                 AsyncImage(
-                    model = ImageRequest.Builder(LocalContext.current).data(item.source)
-                        .build(), contentDescription = null
+                    model = ImageRequest.Builder(LocalContext.current).data(item.source).build(),
+                    contentDescription = null
                 )
             }
             Spacer(Modifier.height(Dimen.twentyFour))
@@ -164,3 +170,38 @@ private fun StoreItemCardView(
         }
     }
 }
+
+@Composable
+private fun EmptyItemList(modifier: Modifier = Modifier) {
+    Card(
+        shape = RoundedCornerShape(Dimen.thirtyTwo),
+        colors = CardDefaults.cardColors(MaterialTheme.colorScheme.surface),
+        modifier = modifier
+            .padding(horizontal = Dimen.fortyEight, vertical = Dimen.twentyFour)
+            .fillMaxWidth()
+    ) {
+        Column(
+            Modifier.padding(Dimen.twentyFour),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.Center
+        ) {
+            Box(getShimmerModifier().weight(1f))
+            Spacer(Modifier.height(Dimen.twentyFour))
+            Box(getShimmerModifier())
+            Spacer(Modifier.height(Dimen.eight))
+            Box(getShimmerModifier(Dimen.twenty))
+            Spacer(Modifier.height(Dimen.twentyFour))
+            Box(getShimmerModifier())
+            Spacer(Modifier.height(Dimen.sixteen))
+            Box(getShimmerModifier(Dimen.fortyEight, Dimen.twelve))
+        }
+    }
+}
+
+@Composable
+private fun getShimmerModifier(height: Dp = Dimen.twentyFour, cornerSize: Dp = Dimen.sixteen) =
+    Modifier
+        .fillMaxWidth()
+        .height(height)
+        .clip(RoundedCornerShape(cornerSize))
+        .shimmerEffect()
