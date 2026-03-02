@@ -81,9 +81,9 @@ class StoreViewModel(
         isShowConfirmDialog = isShow
     }
 
-    fun selectedItem() = viewModelScope.launch(Dispatchers.IO) {
+    fun selectedItem(selectedRemoteGameObject: RemoteGameObject) = viewModelScope.launch(Dispatchers.IO) {
         selectedItemDao.insertSelectedItem(
-            _selectedItemFlow.value?.toSelectedItemEntity() ?: return@launch
+            selectedRemoteGameObject.toSelectedItemEntity() ?: return@launch
         )
     }
 }

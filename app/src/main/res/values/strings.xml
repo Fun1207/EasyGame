@@ -17,16 +17,14 @@
     <string name="game_over_result">You scored %1$d points and earned %2$d coin!</string>
     <string name="back_to_menu">Back to menu</string>
     <!--    Store-->
-    <string name="game_object_price">%1$d$</string>
+    <string name="basket_store">Basket Store</string>
+    <string name="balance">Balance</string>
     <string name="buy">Buy</string>
-    <string name="purchased">Purchased</string>
-    <string name="owned">Owned</string>
-    <string name="owned_coin">Coin: %1d$</string>
-    <string name="free">Free</string>
-    <string name="yes">Yes</string>
-    <string name="no">No</string>
-    <string name="do_you_want_to_select">Do you want to select %1$s to play?</string>
-    <string name="go_back_with_out_changes">Go back without saving changes?</string>
+    <string name="selected">Selected</string>
+    <string name="select">Select</string>
+    <string name="owned">OWNED</string>
+    <string name="need_more">Need More?</string>
+    <string name="get_coins">Get Coins</string>
     <!--    High Score-->
     <string name="back">Back</string>
     <string name="leaderboard">Leaderboard</string>

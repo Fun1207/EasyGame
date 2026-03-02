@@ -17,6 +17,7 @@ private val LightColorScheme = lightColorScheme(
     tertiary = FreshGold,
     background = CoolGreen,
     surface = White,
+    outlineVariant = WhiteMarble,
     onSurface = Hydrocarbon,
     surfaceVariant = TitaniumWhite,
     onSurfaceVariant = SharkGray,

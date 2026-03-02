@@ -17,8 +17,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import com.example.easygame.ui.theme.BackgroundColor
-import com.example.easygame.ui.theme.WhiteColor
 
 @Composable
 fun GameDialog(
@@ -33,7 +31,7 @@ fun GameDialog(
     Box(
         modifier
             .fillMaxSize()
-            .background(BackgroundColor)
+            .background(MaterialTheme.colorScheme.background)
     ) {
         Column(
             modifier = Modifier
@@ -41,7 +39,7 @@ fun GameDialog(
                 .padding(24.dp)
                 .align(Alignment.Center)
                 .clip(RoundedCornerShape(16.dp))
-                .background(WhiteColor)
+                .background(MaterialTheme.colorScheme.surface)
                 .padding(16.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
