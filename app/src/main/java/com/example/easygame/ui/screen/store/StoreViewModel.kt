@@ -23,6 +23,8 @@ class StoreViewModel(
 ) : ViewModel() {
     private val _itemListStateFlow = MutableStateFlow<List<GameObject>>(emptyList())
     val itemListStateFlow = _itemListStateFlow.asStateFlow()
+    private val _buyItemState = MutableStateFlow<PurchaseState>(PurchaseState.Idle)
+    val buyItemState = _buyItemState.asStateFlow()
     private val _buyItemError = MutableStateFlow<GameError?>(null)
     val buyItemError = _buyItemError.asStateFlow()
     val selectedBasketFlow = selectItemUseCase.getSelectedItemFlow().stateIn(
@@ -38,16 +40,29 @@ class StoreViewModel(
 
     init {
         viewModelScope.launch {
-            _itemListStateFlow.update { getStoreItemListUseCase.getItemList() }
+            fetchItemList()
         }
+    }
+
+    private suspend fun fetchItemList() {
+        _itemListStateFlow.update { getStoreItemListUseCase.getItemList() }
     }
 
     fun buyItem(gameObject: GameObject) {
         if (gameObject.isPurchased) return
         viewModelScope.launch {
-            val buyItemState = buyItemUseCase.buyItem(gameObject)
-            if (buyItemState !is PurchaseState.Error) return@launch
-            _buyItemError.update { buyItemState.gameError }
+            _buyItemState.update { PurchaseState.Loading }
+            when (val buyItemState = buyItemUseCase.buyItem(gameObject)) {
+                is PurchaseState.Error -> {
+                    _buyItemError.update { buyItemState.gameError }
+                    _buyItemState.update { buyItemState }
+                }
+                is PurchaseState.Success -> {
+                    fetchItemList()
+                    _buyItemState.update { buyItemState }
+                }
+                else -> Unit
+            }
         }
     }
 

@@ -52,6 +52,7 @@ fun StoreScreen(viewModel: StoreViewModel, onBack: () -> Unit) {
     val selectedItem by viewModel.selectedBasketFlow.collectAsStateWithLifecycle()
     val ownedCoin by viewModel.ownedCoinFlow.collectAsStateWithLifecycle()
     val buyItemError by viewModel.buyItemError.collectAsStateWithLifecycle()
+    val buyItemState by viewModel.buyItemState.collectAsStateWithLifecycle()
     var selectedTabIndex by remember { mutableIntStateOf(0) }
 
     Box(
@@ -68,6 +69,7 @@ fun StoreScreen(viewModel: StoreViewModel, onBack: () -> Unit) {
                 Modifier.weight(1f),
                 itemList,
                 selectedItem.id,
+                buyItemState,
                 viewModel::buyItem,
                 viewModel::selectedItem
             )

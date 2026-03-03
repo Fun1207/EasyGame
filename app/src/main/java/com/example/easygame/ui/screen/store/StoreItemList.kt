@@ -37,6 +37,7 @@ import coil3.compose.AsyncImage
 import coil3.request.ImageRequest
 import com.example.easygame.R
 import com.example.easygame.domain.model.GameObject
+import com.example.easygame.domain.model.PurchaseState
 import com.example.easygame.ui.common.shimmerEffect
 import com.example.easygame.ui.theme.Dimen
 import com.example.easygame.ui.theme.Transparent
@@ -46,6 +47,7 @@ fun StoreItemList(
     modifier: Modifier = Modifier,
     itemList: List<GameObject>,
     selectedItemId: String?,
+    buyItemState: PurchaseState,
     onBuyClick: (GameObject) -> Unit,
     onSelected: (String) -> Unit
 ) {
@@ -63,6 +65,7 @@ fun StoreItemList(
             item = itemList.getOrNull(page) ?: return@HorizontalPager,
             selectedItemId = selectedItemId,
             isFocused = page == pageState.currentPage,
+            buyItemState = buyItemState,
             onBuyClick = onBuyClick,
             onSelectedClick = onSelected
         )
@@ -74,6 +77,7 @@ private fun StoreItemCardView(
     item: GameObject,
     selectedItemId: String?,
     isFocused: Boolean,
+    buyItemState: PurchaseState,
     onBuyClick: (GameObject) -> Unit,
     onSelectedClick: (String) -> Unit
 ) {
@@ -151,6 +155,7 @@ private fun StoreItemCardView(
                     )
                     .clickable(enabled = !isSelected) {
                         when {
+                            buyItemState is PurchaseState.Loading -> Unit
                             !item.isPurchased -> onBuyClick(item)
                             !isSelected -> onSelectedClick(item.id)
                             else -> Unit
