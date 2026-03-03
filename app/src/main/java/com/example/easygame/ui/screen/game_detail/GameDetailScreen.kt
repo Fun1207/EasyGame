@@ -1,21 +1,22 @@
 package com.example.easygame.ui.screen.game_detail
 
 import androidx.activity.compose.BackHandler
-import androidx.compose.animation.core.FastOutSlowInEasing
-import androidx.compose.animation.core.animateFloatAsState
-import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.Image
-import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -26,89 +27,186 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.alpha
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.geometry.Size
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.drawscope.withTransform
-import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.graphics.vector.rememberVectorPainter
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.platform.LocalWindowInfo
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil3.compose.rememberAsyncImagePainter
 import com.example.easygame.R
 import com.example.easygame.domain.model.GameObject
 import com.example.easygame.domain.model.GameObjectType
+import com.example.easygame.ui.common.DialogButton
+import com.example.easygame.ui.common.DialogType
 import com.example.easygame.ui.common.GameDialog
+import com.example.easygame.ui.theme.ClearFrost
+import com.example.easygame.ui.theme.Dimen
+import com.example.easygame.ui.theme.Fiona
 
 @Composable
 fun GameDetailScreen(viewModel: GameDetailViewModel, onBack: () -> Unit) {
-    BackPressHandler(
-        viewModel.isGameOver,
-        viewModel.isGamePaused,
-        viewModel::togglePauseGame,
-        onBack
-    )
-    FocusHandler(viewModel.isGameOver, viewModel.isGamePaused, viewModel::togglePauseGame)
-    GameView(
-        viewModel.basketResource,
-        viewModel.basketX,
-        viewModel.gameObjectList,
-        viewModel::measureHitBoxSize
-    )
-    TopBar(viewModel.heart, viewModel.score, viewModel.coin)
+    val isGameOver by viewModel.isGameOver.collectAsStateWithLifecycle()
+    val isGamePaused by viewModel.isGamePaused.collectAsStateWithLifecycle()
+    val basketX by viewModel.basketX.collectAsStateWithLifecycle()
+    val gameObjectList by viewModel.gameObjectList.collectAsStateWithLifecycle()
+    val score by viewModel.score.collectAsStateWithLifecycle()
+    val coin by viewModel.coin.collectAsStateWithLifecycle()
+    val heart by viewModel.heart.collectAsStateWithLifecycle()
+
+    BackPressHandler(isGameOver, isGamePaused, viewModel::togglePauseGame, onBack)
+    FocusHandler(isGameOver, isGamePaused, viewModel::togglePauseGame)
+    Box(
+        Modifier
+            .fillMaxSize()
+            .background(Brush.linearGradient(colors = listOf(ClearFrost, Fiona)))
+    ) {
+        Image(
+            painter = painterResource(R.drawable.icon_tree),
+            contentDescription = null,
+            modifier = Modifier
+                .fillMaxWidth()
+                .fillMaxHeight(0.5f)
+                .align(Alignment.BottomStart),
+            contentScale = ContentScale.FillWidth
+        )
+        GameView(viewModel.basketResource, basketX, gameObjectList)
+        GameInformation(score, coin, heart) { viewModel.togglePauseGame(true) }
+    }
     ShowGameDialogs(
-        viewModel.score,
-        viewModel.coin,
-        viewModel.isGameOver,
-        viewModel.isGamePaused,
+        score,
+        coin,
+        isGameOver,
+        isGamePaused,
         onBack,
-        viewModel::togglePauseGame
+        { viewModel.togglePauseGame(false) },
+        viewModel::restartGame
     )
 }
 
 @Composable
-fun ShowGameDialogs(
-    score: Int,
-    coin: Int,
+private fun GameOverContent(score: Long, coin: Long) {
+    Row(
+        Modifier
+            .fillMaxWidth()
+            .height(IntrinsicSize.Max)
+    ) {
+        val columnModifier = Modifier
+            .weight(1f)
+            .fillMaxHeight()
+            .clip(RoundedCornerShape(Dimen.twentyFour))
+            .background(MaterialTheme.colorScheme.surfaceVariant)
+            .border(
+                Dimen.one,
+                MaterialTheme.colorScheme.outline,
+                RoundedCornerShape(Dimen.twentyFour)
+            )
+            .padding(Dimen.twentyFour)
+        Column(modifier = columnModifier, horizontalAlignment = Alignment.CenterHorizontally) {
+            Text(
+                text = stringResource(R.string.score),
+                style = MaterialTheme.typography.labelLarge,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+            Spacer(Modifier.height(Dimen.eight))
+            Text(text = score.toString(), style = MaterialTheme.typography.titleMedium)
+        }
+        Spacer(Modifier.width(Dimen.sixteen))
+        Column(modifier = columnModifier, horizontalAlignment = Alignment.CenterHorizontally) {
+            Text(
+                text = stringResource(R.string.coin),
+                style = MaterialTheme.typography.labelLarge,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+            Spacer(Modifier.height(Dimen.eight))
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Image(painterResource(R.drawable.icon_coin_filled), null)
+                Spacer(Modifier.width(Dimen.four))
+                Text(text = coin.toString(), style = MaterialTheme.typography.titleMedium)
+            }
+        }
+    }
+    Spacer(Modifier.height(Dimen.thirtyTwo))
+}
+
+@Composable
+private fun ShowGameDialogs(
+    score: Long,
+    coin: Long,
     isGameOver: Boolean,
     isGamePaused: Boolean,
     onBack: () -> Unit,
-    onTogglePause: (Boolean) -> Unit
+    onUnpause: () -> Unit,
+    onRestartGame: () -> Unit
 ) {
-    if (isGameOver) GameDialog(
+    GameDialog(
+        shouldShow = isGameOver,
         title = stringResource(R.string.game_over),
-        content = stringResource(R.string.game_over_result, score, score + coin),
-        confirm = stringResource(R.string.back_to_menu),
-        onConfirm = onBack
+        message = stringResource(R.string.excellent_run),
+        dialogType = DialogType.INFO,
+        iconResource = R.drawable.icon_flag,
+        isShowCloseButton = false,
+        content = { GameOverContent(score, coin) },
+        topButton = {
+            DialogButton(
+                nameResource = R.string.play_again,
+                icon = { Image(painterResource(R.drawable.icon_reload), null) },
+                backgroundColor = MaterialTheme.colorScheme.primary,
+                textColor = MaterialTheme.colorScheme.onPrimary,
+                onClick = onRestartGame
+            )
+            Spacer(Modifier.height(Dimen.twelve))
+        },
+        bottomButton = {
+            DialogButton(
+                nameResource = R.string.exit_to_menu,
+                icon = { Image(painterResource(R.drawable.icon_home), null) },
+                onClick = onBack
+            )
+        }
     )
-    if (isGamePaused) GameDialog(
+    GameDialog(
+        shouldShow = isGamePaused,
         title = stringResource(R.string.game_paused),
-        content = stringResource(R.string.are_you_sure, score + coin),
-        cancel = stringResource(R.string.end_this_round),
-        onCancel = onBack,
-        confirm = stringResource(R.string.back_to_game),
-        onConfirm = { onTogglePause(false) }
+        message = stringResource(R.string.you_scored, score, score + coin),
+        dialogType = DialogType.INFO,
+        iconResource = R.drawable.icon_pause,
+        onClose = onUnpause,
+        topButton = {
+            DialogButton(
+                nameResource = R.string.resume,
+                icon = { Image(painterResource(R.drawable.icon_play), null) },
+                backgroundColor = MaterialTheme.colorScheme.primary,
+                textColor = MaterialTheme.colorScheme.onPrimary,
+                onClick = onUnpause
+            )
+            Spacer(Modifier.height(Dimen.twelve))
+        },
+        bottomButton = {
+            DialogButton(
+                nameResource = R.string.exit_to_menu,
+                icon = { Image(painterResource(R.drawable.icon_home), null) },
+                onClick = onBack
+            )
+        }
     )
 }
 
 @Composable
-private fun GameView(
-    basketResource: Any,
-    basketX: Float,
-    gameObjectList: List<GameObject>,
-    onMeasuredSize: (Float) -> Unit
-) {
+private fun GameView(basketResource: Any, basketX: Float, gameObjectList: List<GameObject>) {
     val arrowVectorPainter = rememberAsyncImagePainter(basketResource)
     val appleVectorPainter =
         rememberVectorPainter(ImageVector.vectorResource(R.drawable.icon_apple))
-    val bombVectorPainter =
-        rememberVectorPainter(ImageVector.vectorResource(R.drawable.icon_bomb))
-    val coinVectorPainter =
-        rememberVectorPainter(ImageVector.vectorResource(R.drawable.icon_coin))
+    val bombVectorPainter = rememberVectorPainter(ImageVector.vectorResource(R.drawable.icon_bomb))
+    val coinVectorPainter = rememberVectorPainter(ImageVector.vectorResource(R.drawable.icon_coin))
     var objectSize by remember { mutableFloatStateOf(0f) }
     Box(
         modifier = Modifier
@@ -116,9 +214,7 @@ private fun GameView(
             .padding(horizontal = 24.dp, vertical = 64.dp)
             .onSizeChanged { size ->
                 objectSize = size.width * 0.1f
-                if (size.width > 0) onMeasuredSize(objectSize / size.width)
-            },
-        contentAlignment = Alignment.TopCenter
+            }, contentAlignment = Alignment.TopCenter
     ) {
         if (objectSize <= 0) return@Box
         Canvas(
@@ -139,7 +235,7 @@ private fun GameView(
                     )
                 }) {
                     with(
-                        when (apple.gameObjectType) {
+                        when (apple.type) {
                             GameObjectType.APPLE -> appleVectorPainter
                             GameObjectType.BOMB -> bombVectorPainter
                             GameObjectType.COIN -> coinVectorPainter
@@ -155,66 +251,8 @@ private fun GameView(
 }
 
 @Composable
-private fun TopBar(heart: Int, score: Int, coin: Int) =
-    Box(Modifier.padding(16.dp), contentAlignment = Alignment.CenterEnd) {
-        Row {
-            Image(
-                painter = painterResource(R.drawable.icon_coin),
-                contentDescription = null,
-                modifier = Modifier.size(24.dp)
-            )
-            Spacer(modifier = Modifier.width(8.dp))
-            Text(coin.toString(), style = MaterialTheme.typography.bodyLarge)
-        }
-        Column(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalAlignment = Alignment.CenterHorizontally
-        ) {
-            Row(horizontalArrangement = Arrangement.spacedBy(16.dp, Alignment.End)) {
-                repeat(GameDetailViewModel.MAX_HEART_VALUE) { count ->
-                    val isHeartBroken = count >= heart
-                    val explosionScale by animateFloatAsState(
-                        targetValue = if (isHeartBroken) 3f else 1f,
-                        animationSpec = tween(durationMillis = 500, easing = FastOutSlowInEasing)
-                    )
-                    val explosionAlpha by animateFloatAsState(
-                        targetValue = if (isHeartBroken) 0f else 0.8f,
-                        animationSpec = tween(durationMillis = 500)
-                    )
-                    Box(contentAlignment = Alignment.Center) {
-                        if (isHeartBroken) HeartImageView(true)
-                        HeartImageView(
-                            isHeartBroken = false,
-                            modifier = Modifier.graphicsLayer(
-                                scaleX = explosionScale,
-                                scaleY = explosionScale,
-                                alpha = explosionAlpha
-                            )
-                        )
-                    }
-                }
-            }
-            Text(text = stringResource(R.string.score, score))
-        }
-    }
-
-@Composable
-private fun HeartImageView(isHeartBroken: Boolean, modifier: Modifier = Modifier) = Image(
-    modifier = modifier
-        .size(24.dp)
-        .alpha(if (isHeartBroken) 0.8f else 1f),
-    painter = painterResource(
-        if (isHeartBroken) R.drawable.icon_broken_heart
-        else R.drawable.icon_heart
-    ),
-    contentDescription = null
-)
-
-@Composable
 private fun FocusHandler(
-    isGameOver: Boolean,
-    isGamePaused: Boolean,
-    togglePauseGame: (Boolean) -> Unit
+    isGameOver: Boolean, isGamePaused: Boolean, togglePauseGame: (Boolean) -> Unit
 ) {
     val isWindowFocused = LocalWindowInfo.current.isWindowFocused
     LaunchedEffect(isWindowFocused) {

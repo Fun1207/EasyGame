@@ -1,264 +1,215 @@
 package com.example.easygame.ui.screen.store
 
-import android.widget.Toast
-import androidx.activity.compose.BackHandler
+import androidx.compose.animation.animateColorAsState
+import androidx.compose.animation.core.infiniteRepeatable
+import androidx.compose.animation.core.tween
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
-import androidx.compose.foundation.gestures.snapping.rememberSnapFlingBehavior
-import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.safeContentPadding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.lazy.LazyRow
-import androidx.compose.foundation.lazy.itemsIndexed
-import androidx.compose.foundation.lazy.rememberLazyListState
-import androidx.compose.material3.Button
-import androidx.compose.material3.CenterAlignedTopAppBar
-import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.snapshotFlow
+import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.unit.dp
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import coil3.compose.AsyncImage
-import coil3.request.ImageRequest
 import com.example.easygame.R
-import com.example.easygame.domain.model.PurchaseState
-import com.example.easygame.domain.model.RemoteGameObject
+import com.example.easygame.domain.model.GameError
+import com.example.easygame.domain.usecase.BuyItemUseCase
+import com.example.easygame.ui.common.DialogButton
 import com.example.easygame.ui.common.GameDialog
-import com.example.easygame.ui.common.carouselScaleEffect
-import com.example.easygame.ui.theme.WhiteColor
-import kotlinx.coroutines.flow.distinctUntilChanged
-import kotlin.math.abs
+import com.example.easygame.ui.theme.Dimen
+import com.example.easygame.ui.theme.Transparent
 
 @Composable
-fun StoreScreen(viewModel: StoreViewModel, onBack: () -> Unit) = Box(
-    modifier = Modifier
-        .fillMaxSize()
-        .background(WhiteColor),
-) {
+fun StoreScreen(viewModel: StoreViewModel, onBack: () -> Unit) {
     val itemList by viewModel.itemListStateFlow.collectAsStateWithLifecycle()
-    val selectedItem by viewModel.selectedItemFlow.collectAsStateWithLifecycle()
-    val enableBuyButton by viewModel.enableBuyButtonFlow.collectAsStateWithLifecycle()
-    val ownedCoin by viewModel.coinFlow.collectAsStateWithLifecycle()
-    val purchaseState by viewModel.purchaseItemFlow.collectAsStateWithLifecycle()
-    BackPressHandler(
-        viewModel.isShowConfirmDialog,
-        viewModel::toggleConfirmDialog
-    )
-    HeaderView(ownedCoin, purchaseState) { viewModel.toggleConfirmDialog(true) }
-    GameObjectList(
-        Modifier.align(Alignment.CenterStart),
-        itemList,
-        purchaseState,
-        viewModel::setSelectedGameObject
-    )
-    PurchaseView(
+    val selectedItem by viewModel.selectedBasketFlow.collectAsStateWithLifecycle()
+    val ownedCoin by viewModel.ownedCoinFlow.collectAsStateWithLifecycle()
+    val buyItemError by viewModel.buyItemError.collectAsStateWithLifecycle()
+    val buyItemState by viewModel.buyItemState.collectAsStateWithLifecycle()
+    var selectedTabIndex by remember { mutableIntStateOf(0) }
+
+    Box(
         Modifier
-            .align(Alignment.BottomCenter)
-            .padding(bottom = 64.dp),
-        purchaseState,
-        enableBuyButton,
-        selectedItem?.isPurchased,
-        viewModel::buyItem
-    )
-    SelectedItemDialog(
-        selectedItem,
-        viewModel.isShowConfirmDialog,
-        {
-            viewModel.selectedItem()
-            onBack()
-        },
-        { viewModel.toggleConfirmDialog(false) },
-        onBack
-    )
-}
+            .fillMaxSize()
+            .background(MaterialTheme.colorScheme.background)
 
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-private fun HeaderView(ownedCoin: Long, purchaseState: PurchaseState, onBack: () -> Unit) = Column {
-    CenterAlignedTopAppBar(
-        title = {
-            Text(stringResource(R.string.store), style = MaterialTheme.typography.headlineLarge)
-        },
-        navigationIcon = {
-            IconButton(
-                onClick = onBack,
-                enabled = purchaseState !is PurchaseState.Loading
-            ) {
-                Icon(
-                    painter = painterResource(R.drawable.icon_back),
-                    contentDescription = null,
-                    modifier = Modifier.size(48.dp)
-                )
-            }
-        })
-    Spacer(Modifier.height(48.dp))
-    Text(
-        modifier = Modifier.fillMaxWidth(),
-        text = stringResource(R.string.owned_coin, ownedCoin),
-        style = MaterialTheme.typography.headlineSmall,
-        textAlign = TextAlign.Center
-    )
-}
-
-@Composable
-private fun GameObjectList(
-    modifier: Modifier,
-    itemList: List<RemoteGameObject>,
-    purchaseState: PurchaseState,
-    onSelectItem: (String?) -> Unit
-) = BoxWithConstraints(
-    modifier = modifier.fillMaxWidth()
-) {
-    val itemWidth = maxWidth * 0.2f
-    val lazyListState = rememberLazyListState()
-    val snapBehavior = rememberSnapFlingBehavior(lazyListState = lazyListState)
-    val horizontalPadding = (maxWidth - itemWidth) / 2
-    LazyRow(
-        state = lazyListState,
-        flingBehavior = snapBehavior,
-        contentPadding = PaddingValues(horizontal = horizontalPadding),
-        horizontalArrangement = Arrangement.spacedBy(32.dp),
-        verticalAlignment = Alignment.CenterVertically,
-        userScrollEnabled = purchaseState != PurchaseState.Loading
     ) {
-        itemsIndexed(itemList) { index, item ->
-            Box(
-                modifier = Modifier
-                    .width(itemWidth)
-                    .carouselScaleEffect(index, lazyListState),
-                contentAlignment = Alignment.Center
-            ) {
-                GameObjectItem(item)
-            }
-        }
-    }
-    LaunchedEffect(itemList) {
-        snapshotFlow {
-            val layoutInfo = lazyListState.layoutInfo
-            val visibleItems = layoutInfo.visibleItemsInfo
-            if (visibleItems.isEmpty()) return@snapshotFlow null
-            val center = (layoutInfo.viewportStartOffset + layoutInfo.viewportEndOffset) / 2
-            val closestItemIndex =
-                visibleItems.minByOrNull { abs((it.offset + it.size / 2) - center) }?.index
-            itemList.getOrNull(closestItemIndex ?: return@snapshotFlow null)
-        }.distinctUntilChanged().collect { item ->
-            onSelectItem(item?.id)
-        }
-    }
-}
-
-@Composable
-private fun GameObjectItem(remoteGameObject: RemoteGameObject) {
-    val price = remoteGameObject.price ?: 0L
-    Column(
-        horizontalAlignment = Alignment.CenterHorizontally,
-    ) {
-        if (remoteGameObject.isPurchased) Text(
-            text = stringResource(R.string.owned),
-            style = MaterialTheme.typography.bodySmall,
-        )
-        AsyncImage(
-            model = ImageRequest.Builder(LocalContext.current).data(remoteGameObject.source)
-                .build(), contentDescription = null
-        )
-        Spacer(Modifier.height(8.dp))
-        Text(
-            text = remoteGameObject.name.orEmpty(), style = MaterialTheme.typography.bodyMedium
-        )
-        Text(
-            text = if (price != 0L) stringResource(R.string.game_object_price, price)
-            else stringResource(R.string.free),
-            style = MaterialTheme.typography.bodyMedium,
-        )
-    }
-}
-
-@Composable
-private fun PurchaseView(
-    modifier: Modifier,
-    purchaseState: PurchaseState,
-    enableBuyButton: Boolean,
-    isItemPurchased: Boolean?,
-    buyItem: () -> Unit
-) {
-    val isLoading = purchaseState == PurchaseState.Loading
-    val context = LocalContext.current
-    LaunchedEffect(purchaseState) {
-        if (purchaseState is PurchaseState.Error) Toast.makeText(
-            context, purchaseState.throwable?.message, Toast.LENGTH_SHORT
-        ).show()
-    }
-    Button(
-        onClick = buyItem, enabled = enableBuyButton && !isLoading, modifier = modifier
-    ) {
-        if (isLoading) {
-            CircularProgressIndicator(
-                modifier = Modifier.size(24.dp), strokeWidth = 2.dp
+        Column(Modifier.safeContentPadding()) {
+            TopBarView(onBack)
+            Spacer(Modifier.height(Dimen.eight))
+            BalanceView(ownedCoin, buyItemError)
+            StoreItemList(
+                Modifier.weight(1f),
+                itemList,
+                selectedItem.id,
+                buyItemState,
+                viewModel::buyItem,
+                viewModel::selectedItem
             )
-            return@Button
+            GetCoinsButton()
+            Spacer(Modifier.height(Dimen.sixteen))
+            BottomStoreView(selectedTabIndex) { selectedTabIndex = it }
+        }
+        GameDialog(
+            shouldShow = buyItemError != null,
+            title = buyItemError?.title,
+            message = buyItemError?.message,
+            onClose = viewModel::dismissError,
+            topButton = {
+                if (buyItemError?.code != BuyItemUseCase.NOT_ENOUGH_COIN_ERROR_CODE) return@GameDialog
+                DialogButton(
+                    nameResource = R.string.get_coins,
+                    backgroundColor = MaterialTheme.colorScheme.primary,
+                    textColor = MaterialTheme.colorScheme.onPrimary
+                )
+                Spacer(Modifier.height(Dimen.twelve))
+            }
+        )
+    }
+}
+
+@Composable
+private fun TopBarView(onBack: () -> Unit) {
+    Box(
+        Modifier
+            .fillMaxWidth()
+            .padding(horizontal = Dimen.twentyFour)
+            .padding(bottom = Dimen.twentyFour)
+    ) {
+        Box(
+            Modifier
+                .size(Dimen.fortyEight)
+                .clip(CircleShape)
+                .background(MaterialTheme.colorScheme.surface)
+                .clickable(onClick = onBack),
+            contentAlignment = Alignment.Center
+        ) {
+            Image(painterResource(R.drawable.icon_back), null)
         }
         Text(
-            text = stringResource(if (isItemPurchased == true) R.string.purchased else R.string.buy),
-            style = MaterialTheme.typography.titleSmall
+            text = stringResource(R.string.basket_store),
+            modifier = Modifier.align(Alignment.Center),
+            style = MaterialTheme.typography.headlineMedium,
+            fontWeight = FontWeight.Bold
         )
     }
 }
 
 @Composable
-private fun SelectedItemDialog(
-    selectedGameObject: RemoteGameObject?,
-    isShow: Boolean,
-    onYes: () -> Unit,
-    onNo: () -> Unit,
-    onBack: () -> Unit
-) {
-    if (!isShow) return
-    if (selectedGameObject?.isPurchased == true) {
-        GameDialog(
-            content = stringResource(
-                R.string.do_you_want_to_select,
-                selectedGameObject.name.orEmpty()
-            ),
-            confirm = stringResource(R.string.yes),
-            onConfirm = onYes,
-            cancel = stringResource(R.string.no),
-            onCancel = onNo
-        )
-        return
-    }
-    GameDialog(
-        content = stringResource(R.string.go_back_with_out_changes),
-        confirm = stringResource(R.string.yes),
-        onConfirm = onBack
+private fun BalanceView(ownedCoin: Long, buyItemError: GameError?) {
+    val isNotEnoughCoinError = buyItemError?.code == BuyItemUseCase.NOT_ENOUGH_COIN_ERROR_CODE
+    val borderColor = animateColorAsState(
+        targetValue = if (isNotEnoughCoinError) MaterialTheme.colorScheme.error else Transparent,
+        animationSpec = infiniteRepeatable(tween(durationMillis = 1000))
     )
+    Row(
+        Modifier
+            .padding(horizontal = Dimen.twentyFour)
+            .fillMaxWidth()
+            .clip(RoundedCornerShape(Dimen.twentyFour))
+            .run {
+                if (!isNotEnoughCoinError) return@run this
+                border(Dimen.two, borderColor.value, RoundedCornerShape(Dimen.twentyFour))
+            }
+            .background(MaterialTheme.colorScheme.surface)
+            .padding(vertical = Dimen.sixteen, horizontal = Dimen.twentyFour),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        Box(
+            Modifier
+                .clip(CircleShape)
+                .background(
+                    if (isNotEnoughCoinError) MaterialTheme.colorScheme.error.copy(alpha = 0.25f)
+                    else MaterialTheme.colorScheme.background
+                )
+                .padding(Dimen.eight), contentAlignment = Alignment.Center
+        ) {
+            Icon(
+                painter = painterResource(R.drawable.icon_coin_filled),
+                contentDescription = null,
+                tint = if (isNotEnoughCoinError) MaterialTheme.colorScheme.error else Color.Unspecified
+            )
+        }
+        Spacer(Modifier.width(Dimen.twelve))
+        Text(
+            text = stringResource(R.string.balance),
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            style = MaterialTheme.typography.titleMedium
+        )
+        Text(
+            text = ownedCoin.toString(),
+            modifier = Modifier.weight(1f),
+            color = if (isNotEnoughCoinError) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.secondary,
+            style = MaterialTheme.typography.titleLarge,
+            textAlign = TextAlign.End,
+            fontWeight = FontWeight.Bold
+        )
+    }
 }
 
+@Preview
 @Composable
-private fun BackPressHandler(
-    isShowConfirmDialog: Boolean,
-    toggleConfirmDialog: (Boolean) -> Unit
-) = BackHandler(enabled = true) {
-    if (isShowConfirmDialog) toggleConfirmDialog(false)
-    else toggleConfirmDialog(true)
+private fun GetCoinsButton() {
+    Row(
+        modifier = Modifier
+            .padding(horizontal = Dimen.thirtyTwo)
+            .fillMaxWidth()
+            .clip(RoundedCornerShape(Dimen.sixteen))
+            .background(MaterialTheme.colorScheme.surface)
+            .padding(Dimen.sixteen), verticalAlignment = Alignment.CenterVertically
+    ) {
+        Box(
+            modifier = Modifier
+                .size(Dimen.forty)
+                .clip(CircleShape)
+                .background(MaterialTheme.colorScheme.background),
+            contentAlignment = Alignment.Center
+        ) {
+            Image(painterResource(R.drawable.icon_plus), null)
+        }
+        Spacer(Modifier.width(Dimen.sixteen))
+        Column(Modifier.weight(1f)) {
+            Text(
+                stringResource(R.string.need_more),
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                style = MaterialTheme.typography.titleSmall,
+                textAlign = TextAlign.End,
+            )
+            Text(
+                stringResource(R.string.get_coins),
+                color = MaterialTheme.colorScheme.secondary,
+                style = MaterialTheme.typography.titleMedium,
+                textAlign = TextAlign.End,
+                fontWeight = FontWeight.Bold
+            )
+        }
+        Image(painterResource(R.drawable.icon_arrow_right), null)
+    }
 }
