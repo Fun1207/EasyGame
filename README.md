@@ -59,3 +59,11 @@ app/src/main/java/com/example/easygame
 │    └── theme/          # Theme, Color, Type, Dimen
 ├── Activity
 └── Application
+```
+
+
+
+## 📝 Liên hệ
+* **Author**: Nguyễn Tiến Đạt
+* **Email**: dat1207.tiennguyen@gmail.com
+* **Project**: AeroApple - Một dự án học tập về Game Development trên Android.
