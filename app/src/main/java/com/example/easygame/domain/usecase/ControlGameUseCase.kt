@@ -77,7 +77,7 @@ class ControlGameUseCase(
 
     private suspend fun calculateHP() {
         val heart = (healPoint.value - 1).coerceAtLeast(0)
-        if (heart <= 0) quitGame()
+        if (heart <= 0) endGame()
         healPoint.update { heart }
     }
 
@@ -111,6 +111,15 @@ class ControlGameUseCase(
         highScoreDao.upsertHighScore(lowestHighScore.copy(score = score.value, time = date.time))
     }
 
+    private suspend fun endGame() {
+        gameSensorManager.stopListening()
+        withContext(Dispatchers.IO) {
+            updateOwnedCoin()
+            updateHighScore()
+        }
+        isGameOver.update { true }
+    }
+
     suspend fun startGame() = withContext(Dispatchers.Default) {
         gameSensorManager.startListening()
         launch {
@@ -134,15 +143,6 @@ class ControlGameUseCase(
         if (isPause) gameSensorManager.stopListening()
         else gameSensorManager.startListening()
         isGamePause.update { isPause }
-    }
-
-    suspend fun quitGame() {
-        gameSensorManager.stopListening()
-        withContext(Dispatchers.IO) {
-            updateOwnedCoin()
-            updateHighScore()
-        }
-        isGameOver.update { true }
     }
 
     fun clearData() {

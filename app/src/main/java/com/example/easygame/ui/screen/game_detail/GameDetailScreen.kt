@@ -87,9 +87,8 @@ fun GameDetailScreen(viewModel: GameDetailViewModel, onBack: () -> Unit) {
         isGameOver,
         isGamePaused,
         onBack,
-        viewModel::togglePauseGame,
-        viewModel::restartGame,
-        viewModel::quitGame
+        { viewModel.togglePauseGame(false) },
+        viewModel::restartGame
     )
 }
 
@@ -145,9 +144,8 @@ private fun ShowGameDialogs(
     isGameOver: Boolean,
     isGamePaused: Boolean,
     onBack: () -> Unit,
-    onTogglePause: (Boolean) -> Unit,
-    onRestartGame: () -> Unit,
-    onQuitGame: () -> Unit
+    onUnpause: () -> Unit,
+    onRestartGame: () -> Unit
 ) {
     GameDialog(
         shouldShow = isGameOver,
@@ -181,14 +179,14 @@ private fun ShowGameDialogs(
         message = stringResource(R.string.you_scored, score, score + coin),
         dialogType = DialogType.INFO,
         iconResource = R.drawable.icon_pause,
-        onClose = { onTogglePause(false) },
+        onClose = onUnpause,
         topButton = {
             DialogButton(
                 nameResource = R.string.resume,
                 icon = { Image(painterResource(R.drawable.icon_play), null) },
                 backgroundColor = MaterialTheme.colorScheme.primary,
                 textColor = MaterialTheme.colorScheme.onPrimary,
-                onClick = { onTogglePause(false) }
+                onClick = onUnpause
             )
             Spacer(Modifier.height(Dimen.twelve))
         },
@@ -196,10 +194,7 @@ private fun ShowGameDialogs(
             DialogButton(
                 nameResource = R.string.exit_to_menu,
                 icon = { Image(painterResource(R.drawable.icon_home), null) },
-                onClick = {
-                    onQuitGame()
-                    onBack()
-                }
+                onClick = onBack
             )
         }
     )

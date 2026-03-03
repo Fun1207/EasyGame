@@ -48,8 +48,4 @@ class GameDetailViewModel(
         controlGameUseCase.clearData()
         controlGameUseCase.startGame()
     }
-
-    fun quitGame() = viewModelScope.launch {
-        controlGameUseCase.quitGame()
-    }
 }
