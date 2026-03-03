@@ -151,7 +151,7 @@ private fun GameView(
                     )
                 }) {
                     with(
-                        when (apple.gameObjectType) {
+                        when (apple.type) {
                             GameObjectType.APPLE -> appleVectorPainter
                             GameObjectType.BOMB -> bombVectorPainter
                             GameObjectType.COIN -> coinVectorPainter

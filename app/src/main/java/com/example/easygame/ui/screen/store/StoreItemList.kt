@@ -36,7 +36,7 @@ import androidx.compose.ui.unit.Dp
 import coil3.compose.AsyncImage
 import coil3.request.ImageRequest
 import com.example.easygame.R
-import com.example.easygame.domain.model.RemoteGameObject
+import com.example.easygame.domain.model.GameObject
 import com.example.easygame.ui.common.shimmerEffect
 import com.example.easygame.ui.theme.Dimen
 import com.example.easygame.ui.theme.Transparent
@@ -44,10 +44,10 @@ import com.example.easygame.ui.theme.Transparent
 @Composable
 fun StoreItemList(
     modifier: Modifier = Modifier,
-    itemList: List<RemoteGameObject>,
+    itemList: List<GameObject>,
     selectedItemId: String?,
-    onBuyClick: () -> Unit,
-    onSelected: (RemoteGameObject) -> Unit
+    onBuyClick: (GameObject) -> Unit,
+    onSelected: (String) -> Unit
 ) {
     if (itemList.isEmpty()) {
         EmptyItemList(modifier)
@@ -71,22 +71,21 @@ fun StoreItemList(
 
 @Composable
 private fun StoreItemCardView(
-    item: RemoteGameObject,
+    item: GameObject,
     selectedItemId: String?,
     isFocused: Boolean,
-    onBuyClick: () -> Unit,
-    onSelectedClick: (RemoteGameObject) -> Unit
+    onBuyClick: (GameObject) -> Unit,
+    onSelectedClick: (String) -> Unit
 ) {
     val scale by animateFloatAsState(if (isFocused) 1.0f else 0.85f)
     val borderColor = if (isFocused) MaterialTheme.colorScheme.primary else Transparent
-    val roundedCornerShape = RoundedCornerShape(Dimen.thirtyTwo)
     Card(
-        shape = roundedCornerShape,
+        shape = RoundedCornerShape(Dimen.thirtyTwo),
         colors = CardDefaults.cardColors(MaterialTheme.colorScheme.surface),
         modifier = Modifier
             .fillMaxWidth()
             .graphicsLayer(scaleX = scale, scaleY = scale)
-            .border(Dimen.three, borderColor, roundedCornerShape)
+            .border(Dimen.three, borderColor, RoundedCornerShape(Dimen.thirtyTwo))
     ) {
         Column(
             Modifier.padding(Dimen.twentyFour),
@@ -109,7 +108,7 @@ private fun StoreItemCardView(
             }
             Spacer(Modifier.height(Dimen.twentyFour))
             Text(
-                text = item.name.orEmpty(),
+                text = item.name,
                 style = MaterialTheme.typography.headlineMedium,
                 fontWeight = FontWeight.ExtraBold
             )
@@ -123,21 +122,19 @@ private fun StoreItemCardView(
                     painter = painterResource(
                         if (item.isPurchased) R.drawable.icon_check
                         else R.drawable.icon_coin_filled
-                    ),
-                    contentDescription = null
+                    ), contentDescription = null
                 )
                 Spacer(Modifier.width(Dimen.six))
                 Text(
                     text = if (item.isPurchased) stringResource(R.string.owned)
-                    else item.price?.toString().orEmpty(),
-                    style = MaterialTheme.typography.titleLarge
+                    else item.price.toString(), style = MaterialTheme.typography.titleLarge
                 )
             }
             Spacer(Modifier.height(Dimen.sixteen))
             val isSelected = item.id == selectedItemId
             val buttonText = when {
                 !item.isPurchased -> stringResource(R.string.buy)
-                isSelected -> stringResource(R.string.selected)
+                isSelected -> stringResource(R.string.equipped)
                 else -> stringResource(R.string.select)
             }
             Box(
@@ -154,8 +151,8 @@ private fun StoreItemCardView(
                     )
                     .clickable(enabled = !isSelected) {
                         when {
-                            !item.isPurchased -> onBuyClick()
-                            !isSelected -> onSelectedClick(item)
+                            !item.isPurchased -> onBuyClick(item)
+                            !isSelected -> onSelectedClick(item.id)
                             else -> Unit
                         }
                     }
@@ -185,23 +182,28 @@ private fun EmptyItemList(modifier: Modifier = Modifier) {
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Center
         ) {
-            Box(getShimmerModifier().weight(1f))
+            Box(
+                Modifier
+                    .getShimmerModifier()
+                    .weight(1f)
+            )
             Spacer(Modifier.height(Dimen.twentyFour))
-            Box(getShimmerModifier())
+            Box(Modifier.getShimmerModifier())
             Spacer(Modifier.height(Dimen.eight))
-            Box(getShimmerModifier(Dimen.twenty))
+            Box(Modifier.getShimmerModifier(Dimen.twenty))
             Spacer(Modifier.height(Dimen.twentyFour))
-            Box(getShimmerModifier())
+            Box(Modifier.getShimmerModifier())
             Spacer(Modifier.height(Dimen.sixteen))
-            Box(getShimmerModifier(Dimen.fortyEight, Dimen.twelve))
+            Box(Modifier.getShimmerModifier(Dimen.fortyEight, Dimen.twelve))
         }
     }
 }
 
 @Composable
-private fun getShimmerModifier(height: Dp = Dimen.twentyFour, cornerSize: Dp = Dimen.sixteen) =
-    Modifier
-        .fillMaxWidth()
-        .height(height)
-        .clip(RoundedCornerShape(cornerSize))
-        .shimmerEffect()
+private fun Modifier.getShimmerModifier(
+    height: Dp = Dimen.twentyFour, cornerSize: Dp = Dimen.sixteen
+) = this
+    .fillMaxWidth()
+    .height(height)
+    .clip(RoundedCornerShape(cornerSize))
+    .shimmerEffect()

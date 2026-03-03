@@ -1,7 +1,7 @@
 package com.example.easygame.domain.usecase
 
 import com.example.easygame.data.local.dao.HighScoreDao
-import com.example.easygame.data.local.datastore.CoinDataStore
+import com.example.easygame.data.local.datastore.GameDataStore
 import com.example.easygame.data.local.entities.HighScoreEntity
 import com.example.easygame.data.repository.GameSensorManager
 import com.example.easygame.domain.model.GameObject
@@ -20,7 +20,7 @@ import kotlin.random.Random
 
 class ControlGameUseCase(
     private val gameSensorManager: GameSensorManager,
-    private val coinDataStore: CoinDataStore,
+    private val gameDataStore: GameDataStore,
     private val highScoreDao: HighScoreDao
 ) {
     val isGameOver = MutableStateFlow(false)
@@ -43,7 +43,7 @@ class ControlGameUseCase(
                     (rate < BOMB_SPAWN_RATE + COIN_SPAWN_RATE) -> GameObjectType.COIN
                     else -> GameObjectType.APPLE
                 }
-                emit(GameObject(x = Random.nextFloat(), y = -0.1f, gameObjectType = gameObjectType))
+                emit(GameObject(x = Random.nextFloat(), y = -0.1f, type = gameObjectType))
                 delay(Random.nextLong(50, 800))
             }
         }
@@ -60,7 +60,7 @@ class ControlGameUseCase(
                             return@filter true
                         }
                         if (apple.x >= basketX.value - HIT_BOX_SIZE && apple.x <= basketX.value + HIT_BOX_SIZE && apple.y < 1f) {
-                            when (apple.gameObjectType) {
+                            when (apple.type) {
                                 GameObjectType.BOMB -> calculateHP()
                                 GameObjectType.COIN -> coin.update { it + 10 }
                                 GameObjectType.APPLE -> calculateScore()
@@ -91,8 +91,8 @@ class ControlGameUseCase(
     private suspend fun updateOwnedCoin() = withContext(Dispatchers.IO) {
         val earnedCoins = coin.value + score.value
         if (earnedCoins <= 0) return@withContext
-        val ownedCoin = coinDataStore.coins.firstOrNull() ?: 0L
-        coinDataStore.setCoins(ownedCoin + earnedCoins)
+        val ownedCoin = gameDataStore.coins.firstOrNull() ?: 0L
+        gameDataStore.setCoins(ownedCoin + earnedCoins)
     }
 
     private suspend fun updateHighScore() = withContext(Dispatchers.IO) {

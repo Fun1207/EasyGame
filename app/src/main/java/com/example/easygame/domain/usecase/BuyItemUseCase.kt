@@ -1,10 +1,12 @@
 package com.example.easygame.domain.usecase
 
 import com.example.easygame.data.local.dao.PurchasedObjectDao
-import com.example.easygame.data.local.datastore.CoinDataStore
+import com.example.easygame.data.local.datastore.GameDataStore
 import com.example.easygame.data.repository.GameResourceRepository
+import com.example.easygame.domain.model.GameError
+import com.example.easygame.domain.model.GameObject
+import com.example.easygame.domain.model.GameObject.Companion.toPurChasedGameEntity
 import com.example.easygame.domain.model.PurchaseState
-import com.example.easygame.domain.model.RemoteGameObject
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.withContext
@@ -12,48 +14,45 @@ import kotlinx.coroutines.withContext
 class BuyItemUseCase(
     private val purchasedObjectDao: PurchasedObjectDao,
     private val gameResourceRepository: GameResourceRepository,
-    private val coinDataStore: CoinDataStore
+    private val gameDataStore: GameDataStore
 ) {
 
-    val ownedCoin = coinDataStore.coins
-    private fun insertPurchasedObject(remoteGameObject: RemoteGameObject, path: String?) {
+    val ownedCoinFlow = gameDataStore.coins
+    private fun insertPurchasedObject(gameObject: GameObject, path: String?) {
         if (path.isNullOrBlank()) throw Throwable(PATH_EMPTY_ERROR)
-        val purchasedEntity =
-            remoteGameObject.toPurchasedEntityOrNull(path) ?: throw Throwable(INSERTS_ERROR)
+        val purchasedEntity = gameObject.toPurChasedGameEntity().copy(localPath = path)
         purchasedObjectDao.insertPurchasedObject(purchasedEntity)
     }
 
-    private suspend fun downloadItem(remoteGameObject: RemoteGameObject): PurchaseState {
-        val result = gameResourceRepository.saveGameObject(remoteGameObject)
-        val savedPath = result.getOrElse { throwable ->
-            return PurchaseState.Error(throwable)
+    private suspend fun downloadItem(gameObject: GameObject) {
+        val savedPath = gameResourceRepository.saveGameObject(gameObject)
+        insertPurchasedObject(gameObject, savedPath)
+    }
+
+    suspend fun buyItem(gameObject: GameObject) = withContext(Dispatchers.IO) {
+        val ownedCoin = ownedCoinFlow.firstOrNull() ?: 0L
+        if (ownedCoin < gameObject.price) {
+            val error = GameError(
+                message = NOT_ENOUGH_COIN_ERROR,
+                title = NOT_ENOUGH_COIN_TITLE,
+                code = NOT_ENOUGH_COIN_ERROR_CODE
+            )
+            return@withContext PurchaseState.Error(error)
         }
-        return runCatching {
-            insertPurchasedObject(remoteGameObject, savedPath)
-            PurchaseState.Success(remoteGameObject)
+        return@withContext runCatching {
+            downloadItem(gameObject)
+            gameDataStore.setCoins(ownedCoin - gameObject.price)
+            return@withContext PurchaseState.Success
         }.getOrElse { throwable ->
-            PurchaseState.Error(throwable)
+            val error = GameError(throwable.message.toString())
+            PurchaseState.Error(error)
         }
     }
 
-    suspend fun buyItem(remoteGameObject: RemoteGameObject) = withContext(Dispatchers.IO) {
-        val ownedCoin = ownedCoin.firstOrNull() ?: 0L
-        val buyingPrice = remoteGameObject.price ?: 0L
-        if (ownedCoin < buyingPrice) return@withContext PurchaseState.Error(
-            Throwable(NOT_ENOUGH_COIN_ERROR)
-        )
-        val result = downloadItem(remoteGameObject)
-        if (result is PurchaseState.Success) runCatching {
-            coinDataStore.setCoins(ownedCoin - buyingPrice)
-        }.getOrElse { throwable ->
-            return@withContext PurchaseState.Error(throwable)
-        }
-        return@withContext result
-    }
-
-    private companion object {
+    companion object {
         const val PATH_EMPTY_ERROR = "Path empty error"
-        const val INSERTS_ERROR = "Inserts error"
-        const val NOT_ENOUGH_COIN_ERROR = "No coin error"
+        const val NOT_ENOUGH_COIN_TITLE = "Not Enough Coins!"
+        const val NOT_ENOUGH_COIN_ERROR = "Play more or visit the shop to get more."
+        const val NOT_ENOUGH_COIN_ERROR_CODE = 1
     }
 }

@@ -5,28 +5,24 @@ import coil3.ImageLoader
 import coil3.request.ErrorResult
 import coil3.request.ImageRequest
 import coil3.request.SuccessResult
-import com.example.easygame.domain.model.RemoteGameObject
+import com.example.easygame.domain.model.GameObject
 import java.io.File
 
 class GameResourceRepository(private val context: Context, private val imageLoader: ImageLoader) {
 
-    suspend fun saveGameObject(remoteGameObject: RemoteGameObject): Result<String?> {
-        val downloadUrl =
-            remoteGameObject.source ?: return Result.failure(Throwable(EMPTY_URL_ERROR))
+    suspend fun saveGameObject(gameObject: GameObject): String {
+        val downloadUrl = gameObject.source ?: throw Throwable(EMPTY_URL_ERROR)
         val request = ImageRequest.Builder(context).data(downloadUrl).build()
-        return when (val result = imageLoader.execute(request)) {
-            is SuccessResult -> runCatching {
-                Result.success(saveFileToStorage(result, remoteGameObject.name.orEmpty()))
-            }.getOrElse { throwable ->
-                Result.failure(throwable)
-            }
+        when (val result = imageLoader.execute(request)) {
+            is SuccessResult ->
+                return saveFileToStorage(result, gameObject.name)
             is ErrorResult -> {
-                Result.failure(result.throwable)
+                throw result.throwable
             }
         }
     }
 
-    private fun saveFileToStorage(result: SuccessResult, name: String) : String {
+    private fun saveFileToStorage(result: SuccessResult, name: String): String {
         val key = result.diskCacheKey ?: throw Throwable(EMPTY_DISK_CACHE_KEY_ERROR)
         val diskCacheFile = imageLoader.diskCache
             ?.openSnapshot(key)

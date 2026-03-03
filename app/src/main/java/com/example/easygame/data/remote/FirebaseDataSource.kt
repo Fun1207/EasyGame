@@ -1,6 +1,6 @@
 package com.example.easygame.data.remote
 
-import com.example.easygame.domain.model.RemoteGameObject
+import com.example.easygame.data.remote.model.RemoteGameObject
 import com.google.firebase.Firebase
 import com.google.firebase.firestore.firestore
 import com.google.firebase.firestore.toObjects

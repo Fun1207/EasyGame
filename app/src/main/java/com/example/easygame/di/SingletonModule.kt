@@ -1,7 +1,7 @@
 package com.example.easygame.di
 
 import coil3.ImageLoader
-import com.example.easygame.data.local.datastore.CoinDataStore
+import com.example.easygame.data.local.datastore.GameDataStore
 import com.example.easygame.data.remote.FirebaseDataSource
 import com.example.easygame.data.repository.GameResourceRepository
 import com.example.easygame.data.repository.GameSensorManager
@@ -16,5 +16,5 @@ val singletonModule = module {
     single { FirebaseDataSource() }
     single { ImageLoader.Builder(androidContext()).build() }
     single { GameResourceRepository(androidContext(), get()) }
-    single { CoinDataStore(androidContext()) }
+    single { GameDataStore(androidContext()) }
 }

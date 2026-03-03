@@ -6,16 +6,15 @@ import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.easygame.R
-import com.example.easygame.data.local.dao.SelectedItemDao
-import com.example.easygame.domain.model.GameObjectType
 import com.example.easygame.domain.usecase.ControlGameUseCase
+import com.example.easygame.domain.usecase.SelectItemUseCase
 import com.example.easygame.domain.util.toStateFlow
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
 class GameDetailViewModel(
     private val controlGameUseCase: ControlGameUseCase,
-    private val selectedItemDao: SelectedItemDao
+    private val selectItemUseCase: SelectItemUseCase
 ) : ViewModel() {
 
     var basketResource by mutableStateOf<Any>(R.drawable.icon_basket)
@@ -38,8 +37,7 @@ class GameDetailViewModel(
 
     private fun getSelectedItem() {
         viewModelScope.launch(Dispatchers.IO) {
-            val selectedBasket =
-                selectedItemDao.getSelectedItemsByType(GameObjectType.BASKET) ?: return@launch
+            val selectedBasket = selectItemUseCase.getSelectedItem()
             basketResource = selectedBasket.source ?: return@launch
         }
     }
