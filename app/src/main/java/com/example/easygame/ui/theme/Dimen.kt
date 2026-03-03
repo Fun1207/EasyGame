@@ -9,6 +9,7 @@ object Dimen {
     val four = 4.dp
     val six = 6.dp
     val eight = 8.dp
+    val ten = 10.dp
     val twelve = 12.dp
     val sixteen = 16.dp
     val eighteen = 18.dp

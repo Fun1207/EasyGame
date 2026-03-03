@@ -44,6 +44,11 @@ class GameDetailViewModel(
 
     fun togglePauseGame(isPause: Boolean) = controlGameUseCase.togglePause(isPause)
 
+    fun restartGame() = viewModelScope.launch {
+        controlGameUseCase.clearData()
+        controlGameUseCase.startGame()
+    }
+
     fun quitGame() = viewModelScope.launch {
         controlGameUseCase.quitGame()
     }

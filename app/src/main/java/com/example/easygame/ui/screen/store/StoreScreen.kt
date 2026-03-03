@@ -11,7 +11,6 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -22,7 +21,6 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -43,7 +41,8 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.easygame.R
 import com.example.easygame.domain.model.GameError
 import com.example.easygame.domain.usecase.BuyItemUseCase
-import com.example.easygame.ui.theme.Black
+import com.example.easygame.ui.common.DialogButton
+import com.example.easygame.ui.common.GameDialog
 import com.example.easygame.ui.theme.Dimen
 import com.example.easygame.ui.theme.Transparent
 
@@ -76,10 +75,20 @@ fun StoreScreen(viewModel: StoreViewModel, onBack: () -> Unit) {
             Spacer(Modifier.height(Dimen.sixteen))
             BottomStoreView(selectedTabIndex) { selectedTabIndex = it }
         }
-        ErrorDialog(
-            buyItemError,
-            viewModel::dismissError,
-            {}
+        GameDialog(
+            shouldShow = buyItemError != null,
+            title = buyItemError?.title,
+            message = buyItemError?.message,
+            onClose = viewModel::dismissError,
+            topButton = {
+                if (buyItemError?.code != BuyItemUseCase.NOT_ENOUGH_COIN_ERROR_CODE) return@GameDialog
+                DialogButton(
+                    nameResource = R.string.get_coins,
+                    backgroundColor = MaterialTheme.colorScheme.primary,
+                    textColor = MaterialTheme.colorScheme.onPrimary
+                )
+                Spacer(Modifier.height(Dimen.twelve))
+            }
         )
     }
 }
@@ -200,93 +209,5 @@ private fun GetCoinsButton() {
             )
         }
         Image(painterResource(R.drawable.icon_arrow_right), null)
-    }
-}
-
-@Composable
-private fun ErrorDialog(error: GameError?, onClose: () -> Unit, onGetCoins: () -> Unit) {
-    if (error == null) return
-    Box(
-        Modifier
-            .fillMaxSize()
-            .background(Black.copy(alpha = 0.75f))
-            .clickable(enabled = false) {},
-        contentAlignment = Alignment.Center
-    ) {
-        Box(
-            Modifier
-                .padding(Dimen.twentyFour)
-                .fillMaxWidth()
-                .clip(RoundedCornerShape(Dimen.forty))
-                .background(MaterialTheme.colorScheme.surface)
-                .border(
-                    Dimen.one,
-                    MaterialTheme.colorScheme.onErrorContainer,
-                    RoundedCornerShape(Dimen.forty)
-                )
-        ) {
-            Column(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(Dimen.thirtyTwo),
-                horizontalAlignment = Alignment.CenterHorizontally
-            ) {
-                Box(
-                    Modifier
-                        .size(Dimen.sixtyFour)
-                        .aspectRatio(1f)
-                        .clip(CircleShape)
-                        .background(MaterialTheme.colorScheme.errorContainer),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Icon(painterResource(R.drawable.icon_error), null)
-                }
-                Spacer(Modifier.height(Dimen.twentyFour))
-                Text(
-                    text = error.title,
-                    style = MaterialTheme.typography.titleLarge
-                )
-                Spacer(Modifier.height(Dimen.twelve))
-                Text(
-                    text = error.message,
-                    style = MaterialTheme.typography.bodyLarge,
-                    textAlign = TextAlign.Center
-                )
-                Spacer(Modifier.height(Dimen.thirtyTwo))
-                if (error.code == BuyItemUseCase.NOT_ENOUGH_COIN_ERROR_CODE) {
-                    Text(
-                        text = stringResource(R.string.get_coins),
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .clip(RoundedCornerShape(Dimen.sixteen))
-                            .background(MaterialTheme.colorScheme.primary)
-                            .clickable(onClick = onGetCoins)
-                            .padding(vertical = Dimen.sixteen),
-                        textAlign = TextAlign.Center,
-                        color = MaterialTheme.colorScheme.onPrimary
-                    )
-                    Spacer(Modifier.height(Dimen.twelve))
-                }
-                Text(
-                    text = stringResource(R.string.close),
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .clip(RoundedCornerShape(Dimen.sixteen))
-                        .background(MaterialTheme.colorScheme.surfaceVariant)
-                        .clickable(onClick = onClose)
-                        .padding(vertical = Dimen.sixteen),
-                    textAlign = TextAlign.Center,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
-            }
-            IconButton(
-                onClick = onClose,
-                modifier = Modifier
-                    .align(Alignment.TopEnd)
-                    .padding(Dimen.eight)
-            ) {
-                Icon(painterResource(R.drawable.icon_close), null)
-            }
-        }
     }
 }

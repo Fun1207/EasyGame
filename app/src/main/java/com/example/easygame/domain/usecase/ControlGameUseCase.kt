@@ -7,7 +7,6 @@ import com.example.easygame.data.repository.GameSensorManager
 import com.example.easygame.domain.model.GameObject
 import com.example.easygame.domain.model.GameObjectType
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.firstOrNull
@@ -112,11 +111,11 @@ class ControlGameUseCase(
         highScoreDao.upsertHighScore(lowestHighScore.copy(score = score.value, time = date.time))
     }
 
-    suspend fun startGame() = coroutineScope {
+    suspend fun startGame() = withContext(Dispatchers.Default) {
         gameSensorManager.startListening()
         launch {
             gameSensorManager.tiltData.collect { coordinate ->
-                basketX.update { (it - coordinate * 0.005f).coerceIn(0f, 1f) }
+                basketX.update { (it - coordinate * 0.003f).coerceIn(0f, 1f) }
             }
         }
         launch {
@@ -144,6 +143,16 @@ class ControlGameUseCase(
             updateHighScore()
         }
         isGameOver.update { true }
+    }
+
+    fun clearData() {
+        speedLevel.update { 1f }
+        healPoint.update { MAX_HP }
+        score.update { 0 }
+        coin.update { 0 }
+        gameObjectList.update { emptyList() }
+        basketX.update { 0.5f }
+        isGameOver.update { false }
     }
 
     companion object {
