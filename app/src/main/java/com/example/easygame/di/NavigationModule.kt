@@ -30,22 +30,22 @@ val navigationModule = module {
     }
 
     navigation<Screen.Home> {
-        val navigator = getOrNull<Navigator>()
+        val navigator = koinInject<Navigator>()
         HomeScreen(
             navigateToGameDetail = {
-                navigator?.navigateTo(destination = Screen.GameDetail)
+                navigator.navigateTo(destination = Screen.GameDetail)
             },
             navigateToHighScore = {
-                navigator?.navigateTo(destination = Screen.HighScore)
+                navigator.navigateTo(destination = Screen.HighScore)
             },
             navigateToStore = {
-                navigator?.navigateTo(destination = Screen.Store)
+                navigator.navigateTo(destination = Screen.Store)
             },
             navigateToSettings = {
-                navigator?.navigateTo(destination = Screen.Setting)
+                navigator.navigateTo(destination = Screen.Setting)
             },
             quitGame = {
-                navigator?.onQuitApplication?.invoke()
+                navigator.onQuitApplication?.invoke()
             }
         )
     }
