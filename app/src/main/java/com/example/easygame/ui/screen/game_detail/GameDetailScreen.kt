@@ -176,7 +176,7 @@ private fun ShowGameDialogs(
     GameDialog(
         shouldShow = isGamePaused,
         title = stringResource(R.string.game_paused),
-        message = stringResource(R.string.you_scored, score, score + coin),
+        message = stringResource(R.string.you_scored, score, coin),
         dialogType = DialogType.INFO,
         iconResource = R.drawable.icon_pause,
         onClose = onUnpause,

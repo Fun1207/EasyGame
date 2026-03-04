@@ -139,7 +139,7 @@ fun DialogButton(
         .fillMaxWidth()
         .clip(RoundedCornerShape(Dimen.sixteen))
         .background(backgroundColor)
-        .clickable(onClick = onClick)
+        .safeClickable(onClick = onClick)
         .padding(vertical = Dimen.sixteen),
     verticalAlignment = Alignment.CenterVertically,
     horizontalArrangement = Arrangement.Center

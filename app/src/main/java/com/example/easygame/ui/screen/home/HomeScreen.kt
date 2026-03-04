@@ -2,7 +2,6 @@ package com.example.easygame.ui.screen.home
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -34,6 +33,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import com.example.easygame.BuildConfig
 import com.example.easygame.R
+import com.example.easygame.ui.common.safeClickable
 import com.example.easygame.ui.theme.Dimen
 
 @Preview
@@ -140,9 +140,7 @@ private fun HomeButton(
             .padding(horizontal = Dimen.twentyFour)
             .clip(RoundedCornerShape(Dimen.thirtyTwo))
             .background(color = backgroundColor)
-            .clickable(
-                onClick = onClick
-            )
+            .safeClickable(onClick = onClick)
             .padding(vertical = Dimen.eighteen),
         horizontalArrangement = Arrangement.Center,
         verticalAlignment = Alignment.CenterVertically,

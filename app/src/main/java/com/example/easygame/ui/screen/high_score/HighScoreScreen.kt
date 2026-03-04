@@ -2,7 +2,6 @@ package com.example.easygame.ui.screen.high_score
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -38,6 +37,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.easygame.R
 import com.example.easygame.data.local.entities.HighScoreEntity
 import com.example.easygame.domain.util.toDateTime
+import com.example.easygame.ui.common.safeClickable
 import com.example.easygame.ui.theme.DarkTangerine
 import com.example.easygame.ui.theme.Dimen
 import com.example.easygame.ui.theme.FreshGold
@@ -77,7 +77,7 @@ fun HighScoreScreen(viewModel: HighScoreViewModel, onBack: () -> Unit) {
                 .fillMaxWidth()
                 .clip(RoundedCornerShape(Dimen.twentyFour))
                 .background(MaterialTheme.colorScheme.surface)
-                .clickable(onClick = onBack)
+                .safeClickable(onClick = onBack)
                 .padding(horizontal = Dimen.twentyFour, vertical = Dimen.sixteen),
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.Center

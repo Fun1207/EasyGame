@@ -7,10 +7,13 @@ import androidx.compose.animation.core.infiniteRepeatable
 import androidx.compose.animation.core.rememberInfiniteTransition
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.composed
@@ -19,6 +22,7 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
 import com.example.easygame.ui.theme.Black
+import kotlinx.coroutines.delay
 import kotlin.math.abs
 
 fun Modifier.carouselScaleEffect(index: Int, lazyListState: LazyListState) = composed {
@@ -69,4 +73,17 @@ fun Modifier.shimmerEffect(
             end = Offset(translateAnim, translateAnim)
         )
     )
+}
+
+@Composable
+fun Modifier.safeClickable(onClick: () -> Unit): Modifier {
+    val canClick = remember { mutableStateOf(true) }
+    LaunchedEffect(canClick) {
+        delay(150L)
+        canClick.value = true
+    }
+    return this.clickable {
+        canClick.value = false
+        onClick()
+    }
 }

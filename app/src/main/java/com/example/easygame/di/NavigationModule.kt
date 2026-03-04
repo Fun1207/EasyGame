@@ -7,13 +7,27 @@ import com.example.easygame.ui.screen.high_score.HighScoreScreen
 import com.example.easygame.ui.screen.home.HomeScreen
 import com.example.easygame.ui.screen.setting.SettingScreen
 import com.example.easygame.ui.screen.store.StoreScreen
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.SupervisorJob
+import org.koin.compose.koinInject
 import org.koin.compose.viewmodel.koinViewModel
 import org.koin.core.annotation.KoinExperimentalAPI
 import org.koin.dsl.module
 import org.koin.dsl.navigation3.navigation
+import org.koin.dsl.onClose
 
 @OptIn(KoinExperimentalAPI::class)
 val navigationModule = module {
+
+    single {
+        Navigator(
+            startDestination = Screen.Home,
+            CoroutineScope(Dispatchers.Main + SupervisorJob())
+        )
+    }.onClose { navigator ->
+        navigator?.onClear()
+    }
 
     navigation<Screen.Home> {
         val navigator = getOrNull<Navigator>()
@@ -37,26 +51,26 @@ val navigationModule = module {
     }
 
     navigation<Screen.GameDetail> {
-        val navigator = getOrNull<Navigator>()
+        val navigator = koinInject<Navigator>()
         GameDetailScreen(
             viewModel = koinViewModel(),
-            onBack = { navigator?.popBackStack() }
+            onBack = { navigator.popBackStack() }
         )
     }
 
     navigation<Screen.Store> {
-        val navigator = getOrNull<Navigator>()
+        val navigator = koinInject<Navigator>()
         StoreScreen(
             viewModel = koinViewModel(),
-            onBack = { navigator?.popBackStack() }
+            onBack = { navigator.popBackStack() }
         )
     }
 
     navigation<Screen.HighScore> {
-        val navigator = getOrNull<Navigator>()
+        val navigator = koinInject<Navigator>()
         HighScoreScreen(
             viewModel = koinViewModel(),
-            onBack = { navigator?.popBackStack() }
+            onBack = { navigator.popBackStack() }
         )
     }
 

@@ -9,8 +9,8 @@ import androidx.navigation3.runtime.rememberSaveableStateHolderNavEntryDecorator
 import androidx.navigation3.ui.NavDisplay
 import com.example.easygame.navigation.Navigator
 import com.example.easygame.ui.theme.GameTheme
-import org.koin.androidx.compose.navigation3.getEntryProvider
 import org.koin.compose.koinInject
+import org.koin.compose.navigation3.koinEntryProvider
 import org.koin.core.annotation.KoinExperimentalAPI
 
 class MainActivity : ComponentActivity() {
@@ -28,7 +28,7 @@ class MainActivity : ComponentActivity() {
                 NavDisplay(
                     backStack = navigator.backStack,
                     onBack = navigator::popBackStack,
-                    entryProvider = getEntryProvider(),
+                    entryProvider = koinEntryProvider(),
                     entryDecorators = listOf(
                         rememberSaveableStateHolderNavEntryDecorator(),
                         rememberViewModelStoreNavEntryDecorator()
