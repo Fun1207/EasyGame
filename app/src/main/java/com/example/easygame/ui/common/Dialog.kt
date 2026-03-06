@@ -41,8 +41,8 @@ fun GameDialog(
     shouldShow: Boolean,
     title: String? = null,
     message: String? = null,
-    dialogType: DialogType = DialogType.ERROR,
-    iconResource: Int = R.drawable.icon_error,
+    dialogType: DialogType = DialogType.INFO,
+    iconResource: Int? = null,
     isShowCloseButton: Boolean = true,
     onClose: () -> Unit = {},
     content: @Composable () -> Unit = {},
@@ -83,17 +83,19 @@ fun GameDialog(
                     .padding(Dimen.thirtyTwo),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                Box(
-                    Modifier
-                        .size(Dimen.sixtyFour)
-                        .aspectRatio(1f)
-                        .clip(CircleShape)
-                        .background(dialogColor),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Image(painterResource(iconResource), null)
+                iconResource?.let {
+                    Box(
+                        Modifier
+                            .size(Dimen.sixtyFour)
+                            .aspectRatio(1f)
+                            .clip(CircleShape)
+                            .background(dialogColor),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Image(painterResource(iconResource), null)
+                    }
+                    Spacer(Modifier.height(Dimen.twentyFour))
                 }
-                Spacer(Modifier.height(Dimen.twentyFour))
                 title?.let {
                     Text(
                         text = title,

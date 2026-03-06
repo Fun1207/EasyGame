@@ -22,6 +22,7 @@ object Dimen {
     val fortyFour = 44.dp
     val fortyEight = 48.dp
     val fiftyTwo = 52.dp
+    val fiftySix = 56.dp
     val sixtyFour = 64.dp
     val oneHundredTwentyEight = 128.dp
 }

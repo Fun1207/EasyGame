@@ -46,7 +46,6 @@ import com.example.easygame.R
 import com.example.easygame.domain.model.GameObject
 import com.example.easygame.domain.model.GameObjectType
 import com.example.easygame.ui.common.DialogButton
-import com.example.easygame.ui.common.DialogType
 import com.example.easygame.ui.common.GameDialog
 import com.example.easygame.ui.theme.ClearFrost
 import com.example.easygame.ui.theme.Dimen
@@ -151,7 +150,6 @@ private fun ShowGameDialogs(
         shouldShow = isGameOver,
         title = stringResource(R.string.game_over),
         message = stringResource(R.string.excellent_run),
-        dialogType = DialogType.INFO,
         iconResource = R.drawable.icon_flag,
         isShowCloseButton = false,
         content = { GameOverContent(score, coin) },
@@ -177,7 +175,6 @@ private fun ShowGameDialogs(
         shouldShow = isGamePaused,
         title = stringResource(R.string.game_paused),
         message = stringResource(R.string.you_scored, score, coin),
-        dialogType = DialogType.INFO,
         iconResource = R.drawable.icon_pause,
         onClose = onUnpause,
         topButton = {

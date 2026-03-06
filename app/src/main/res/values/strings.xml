@@ -33,4 +33,19 @@
     <string name="top_apple_catcher">Top Apple Catcher</string>
     <string name="no_score_yet">No scores yet!</string>
     <string name="be_the_first_to_catch_some_apples">Be the first to catch some apples!</string>
+    <!--    Settings-->
+    <string name="audio">AUDIO</string>
+    <string name="sound_effects">Sound Effects</string>
+    <string name="musics">Musics</string>
+    <string name="volume">Volume</string>
+    <string name="account">ACCOUNT</string>
+    <string name="guest_player">Guest Player</string>
+    <string name="not_linked">Not Linked</string>
+    <string name="link">Link</string>
+    <string name="general">GENERAL</string>
+    <string name="language">Language</string>
+    <string name="select_language">Select Language</string>
+    <string name="save">Save</string>
+    <string name="cancel">Cancel</string>
+    <string name="reset_game_progress">Reset Game Progress</string>
 </resources>

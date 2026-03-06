@@ -75,6 +75,10 @@ val navigationModule = module {
     }
 
     navigation<Screen.Setting> {
-        SettingScreen()
+        val navigator = koinInject<Navigator>()
+        SettingScreen(
+            viewModel = koinViewModel(),
+            onBack = { navigator.popBackStack() }
+        )
     }
 }

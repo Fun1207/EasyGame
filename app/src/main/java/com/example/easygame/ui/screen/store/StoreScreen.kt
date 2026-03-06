@@ -41,6 +41,7 @@ import com.example.easygame.R
 import com.example.easygame.domain.model.GameError
 import com.example.easygame.domain.usecase.BuyItemUseCase
 import com.example.easygame.ui.common.DialogButton
+import com.example.easygame.ui.common.DialogType
 import com.example.easygame.ui.common.GameDialog
 import com.example.easygame.ui.common.safeClickable
 import com.example.easygame.ui.theme.Dimen
@@ -81,6 +82,8 @@ fun StoreScreen(viewModel: StoreViewModel, onBack: () -> Unit) {
             shouldShow = buyItemError != null,
             title = buyItemError?.title,
             message = buyItemError?.message,
+            dialogType = DialogType.ERROR,
+            iconResource = R.drawable.icon_error,
             onClose = viewModel::dismissError,
             topButton = {
                 if (buyItemError?.code != BuyItemUseCase.NOT_ENOUGH_COIN_ERROR_CODE) return@GameDialog
